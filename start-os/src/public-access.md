@@ -1,15 +1,11 @@
 # Public Access
 
-Public access means making your services reachable by anyone on the Internet, not just your own devices. This is how you host a website, a blog, a public API, or any service you want others to use.
-
-## When to Use Public Access
-
-Public access is for services you intentionally want to share with others. For example, hosting a personal website, a Nostr relay, a Lightning node, or a Nextcloud instance for your family. If only you and your own devices need access, use [private access](private-access.md) instead.
+Public connections make your services reachable by anyone on the Internet, not just your own devices. This is for services you intentionally want to share — a personal website, a Nostr relay, a Lightning node, or a Nextcloud instance for your family. If only you and your own devices need access, use [private](private-access.md) connections instead.
 
 > [!WARNING]
 > If your ISP uses [CGNAT](cgnat.md), your router cannot accept inbound connections. Clearnet hosting and public IP access require a [StartTunnel](/start-tunnel/) gateway. Tor and Holesail work regardless of CGNAT.
 
-## Public Hosting Methods
+## Clearnet, Tor, and Public IP
 
 - **[Clearnet](clearnet.md)** — Host services on the public Internet using standard domains (`.com`, `.net`, etc.). Requires [gateway](gateways.md) selection, a domain name, DNS configuration, and port forwarding. Anyone can access your service using a normal browser.
 
@@ -20,6 +16,6 @@ Public access is for services you intentionally want to share with others. For e
 > [!TIP]
 > Tor is listed under both [private](private-access.md) and public access because the difference is simply whether you share the `.onion` address. Keep it secret and it's a private tunnel to your service. Publish it and it becomes a public endpoint — no configuration change needed.
 
-## Combining Strategies
+## Clearnet and Tor Together
 
 You can host the same service on both clearnet and Tor simultaneously. This is useful when you want a standard domain for everyday access but also want a censorship-resistant fallback that doesn't depend on DNS or your gateway.

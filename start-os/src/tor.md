@@ -1,19 +1,6 @@
 # Tor
 
-Access your server over the Tor network using `.onion` addresses. Tor provides anonymous, censorship-resistant connections and requires installing the Tor service from the StartOS marketplace. Onion addresses can be kept private or published for public hosting.
-
-## Use Case
-
-Tor lets you host services on the overlay network as `.onion` domains. How you use an onion address determines whether it functions as private or public access:
-
-1. **Private and anonymous**. Unless you share or leak a Tor address, nobody knows it exists and nobody knows it belongs to you. It is your secure, secret tunnel to the underlying website/API.
-
-1. **Public and anonymous**. If you publish a Tor address _without_ associating it with your identity (not easy to do), people know it exists but nobody knows it belongs to you. By this method, you can anonymously host a censorship-resistant website/API on the private web.
-
-1. **Public and identified**. If you publish a Tor address _and_ associate it with your identity, people know it exists and they know it belongs to you. This is useful for hosting an identified yet still censorship-resistant website/API, or for sharing access with friends and family.
-
-> [!WARNING]
-> It is normal for Tor connections to be slow or unreliable at times.
+Access your server over the Tor network using `.onion` addresses. Tor provides anonymous, censorship-resistant connections. How you use an onion address determines whether it functions as private or public access: keep the address secret and it's a private tunnel; publish it without associating your identity and you host anonymously; publish it with your identity and you host an identified but censorship-resistant service.
 
 ## Setting Up Tor
 
@@ -23,21 +10,24 @@ Tor is not included in StartOS by default. To use Tor, you must install the **To
 
 1. Start the Tor service and wait for it to become healthy.
 
-## Managing Onion Services
+## Creating and Deleting Onion Services
 
-Once Tor is installed and running, you can create `.onion` addresses for specific service interfaces on your server.
+Once Tor is installed, a **Tor** addresses table appears on each service's [interface](interfaces.md) addresses page.
 
-1. Open the Tor service and go to **Actions > Manage Onion Services**.
+1. Navigate to the service you want to expose over Tor.
 
-1. Select a service interface to create an onion address for.
+1. Open the interface's addresses page.
 
-1. To view your onion addresses, go to **Actions > View Onion Addresses**.
+1. In the Tor table, click **Add Onion Service** to create a `.onion` address for that interface.
+
+1. To delete an onion address, click the overflow menu on that row and select **Delete**.
 
 > [!TIP]
 > When creating an onion service, you can upload a private key to use a vanity address. For instructions on generating a vanity address, see [here](https://community.torproject.org/onion-services/advanced/vanity-addresses/).
 
-> [!NOTE]
-> Each onion domain produces two addresses: `HTTP` and `HTTPS`. Because Tor is a secure protocol, it is perfectly safe to use the `HTTP` address. It is also preferable, because it does not require anyone to trust your server's Root CA. Some applications may require `HTTPS`, in which case the certificate is signed by your server's Root CA.
+## HTTP vs HTTPS (SSL)
+
+When creating an onion service, you can choose whether to enable SSL (HTTPS). Because Tor is already an encrypted protocol, HTTP is perfectly safe and is the recommended default — it means neither you nor anyone you share the address with needs to [trust your server's Root CA](trust-ca.md). Only enable SSL if the client application naively requires HTTPS (for example, native Bitwarden apps that enforce HTTPS without considering Tor).
 
 ## Connecting over Tor
 

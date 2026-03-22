@@ -1,12 +1,8 @@
 # Private Access
 
-Private access means connecting to your server and its services without exposing anything to the public Internet. Only you and your authorized devices can reach your server. StartOS supports several private access strategies, each with different tradeoffs.
+Private connections keep your services accessible only to you and your authorized devices — nothing is exposed to the public Internet. Most people will use private connections for most of their services most of the time. Unless you are intentionally hosting something for others (a website, a blog, a Lightning node), your services should be privately accessible only to you and your trusted devices.
 
-## When to Use Private Access
-
-Most people will use private access for most of their services most of the time. Unless you are intentionally hosting something for the public (a website, a blog, a Lightning node), your services should be privately accessible only to you and your trusted devices.
-
-## Strategies
+## LAN, VPN, Tor, and Holesail
 
 - **[LAN](lan.md)** — The fastest option. Traffic stays on your local network and never reaches the Internet. Requires being connected to the same network as your server and [trusting your Root CA](trust-ca.md).
 
@@ -16,9 +12,9 @@ Most people will use private access for most of their services most of the time.
 
 - **[Holesail](holesail.md)** — Direct peer-to-peer encrypted tunnels with no port forwarding, static IPs, or Root CA trust required. Once connected, traffic flows directly between peers, so speeds are comparable to VPN. Works behind restrictive networks. Requires installing the **Holesail** service from the marketplace.
 
-## Combining Strategies
+## Common Combinations
 
-These strategies are not mutually exclusive. A common setup is:
+These are not mutually exclusive. A common setup is:
 
 - **LAN** for daily use at home
 - **VPN** or **Holesail** for remote access from your own devices

@@ -27,12 +27,13 @@ StartOS is a sovereign computing platform that makes it easy to run a personal s
 
 ## Connecting
 
-- [Private Access](private-access.md)
-- [Public Access](public-access.md)
+- [Local](lan.md)
+- [Remote](remote-access.md)
+- [Private](private-access.md)
+- [Public](public-access.md)
 
 ## Networking
 
-- [LAN](lan.md)
 - [mDNS](mdns.md)
 - [Inbound VPN](inbound-vpn.md)
 - [Outbound VPN](outbound-vpn.md)

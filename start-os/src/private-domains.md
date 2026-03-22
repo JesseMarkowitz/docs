@@ -4,10 +4,10 @@ A private domain works like your server's [mDNS address](mdns.md), except it als
 
 Private domains can only be accessed when connected to the same LAN as your server, either physically or via VPN, and they require trusting your server's Root CA.
 
+## Adding a Private Domain
+
 > [!WARNING]
 > Private domains can only be added to **Ethernet** and **Wireless** gateways. They cannot be added to WireGuard (StartTunnel) gateways. This is because private domains rely on your local network's DNS configuration, which WireGuard gateways do not control.
-
-## Adding a Private Domain
 
 1. If you haven't already, assign a static IP address to your server on the LAN. Refer to your router's user manual for detailed instructions.
 

@@ -1,16 +1,6 @@
 # Alternative Registries
 
-Beyond the [default registries](default-registries.md), you can add alternative registries to your Marketplace.
-
-To switch between registries or add new ones, click "Switch" beneath the current registry title in the sidebar.
-
-## Use Case
-
-Custom registries are useful for:
-
-- Organizations that package services for their own users
-- Developers distributing services outside the default registries
-- Communities curating specialized collections of services
+Beyond the [default registries](default-registries.md), you can add alternative registries to your Marketplace. Custom registries are useful for organizations packaging services for their own users, developers distributing services outside the default registries, or communities curating specialized collections. To switch between registries or add new ones, click "Switch" beneath the current registry title in the sidebar.
 
 > [!NOTE]
 > Start9 does not vet, endorse, or support services from custom registries. Exercise caution and only add registries you trust.

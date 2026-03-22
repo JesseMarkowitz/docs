@@ -1,26 +1,22 @@
-# LAN
+# Local Access
 
-Connect to your server over your local network using its [mDNS address](mdns.md) or direct IP address. This is the fastest connection method, as traffic stays on your LAN and never reaches the Internet.
-
-## Use Case
-
-Local connections are the fastest possible, as they do not reach out to the Internet. You must be connected to the same Local Area Network (LAN) as your server.
+Connect to your server over your local network using its [mDNS address](mdns.md), direct IP address, or [private domain](private-domains.md). This is the fastest connection method, as traffic stays entirely on your LAN and never reaches the Internet. You must be connected to the same Local Area Network (LAN) as your server, and you must [trust your Root CA](trust-ca.md). The StartOS dashboard is available at the base address (e.g. `my-cool-server.local`), while installed services are available on different ports of that same address.
 
 ## Watch the Video
 
 <div class="yt-video" data-id="lAMI43MC7fQ" data-title="Connecting Locally"></div>
 
-## Option 1: mDNS Address
+## mDNS, IP Address, and Private Domains
 
-Your server's [mDNS address](mdns.md) (e.g. `my-cool-server.local`) is derived from your [server name](server-name.md) and resolves to your server's LAN IP address automatically.
+- **[mDNS](mdns.md)** — Your server's `.local` address (e.g. `my-cool-server.local`) is derived from your [server name](server-name.md) and resolves to your server's LAN IP address automatically.
 
-## Option 2: IP Address
+- **IP address** — Connect using your server's LAN IP directly. The address can be found in your StartOS dashboard at `System -> StartOS UI`, in your router dashboard, or by pinging your server's mDNS address from a computer on the same network.
 
-Your router automatically assigns your server an IP address on the LAN. The address can be found (1) in your StartOS dashboard at `System -> StartOS UI`, (2) in your router dashboard, or (3) by `pinging` your server's mDNS address from the command line of a computer on the same network.
+- **[Private Domains](private-domains.md)** — Assign custom domain names to service interfaces. Private domains work like the mDNS address but also work over [VPN](inbound-vpn.md) and can be anything you choose.
 
 > [!IMPORTANT]
-> Your router may unexpectedly change your server's IP address on the LAN. To avoid this, we _highly_ recommend assigning a static IP address. This becomes _necessary_ if you intend to access your server via VPN or clearnet. All routers support setting a static IP address for devices on the LAN. Refer to your router's user manual for detailed instructions.
+> We _highly_ recommend setting a static IP address for your server on the LAN. This becomes _necessary_ if you also intend to set up VPN or clearnet. All routers support this. Refer to AI or your router's user manual for detailed instructions.
 
-## Private Domains
+## Tunnels Do Not Work Locally
 
-You can also assign [private domains](private-domains.md) to service interfaces. Private domains work like the mDNS address but also work over [VPN](inbound-vpn.md) and can be anything you choose.
+[Holesail](holesail.md) and [VPN](inbound-vpn.md) tunnels will not work when your device is on the same LAN as your server due to loopback. To test a tunnel-based connection, disconnect your device from WiFi and use mobile data instead.

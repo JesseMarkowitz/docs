@@ -1,11 +1,15 @@
 # Inbound VPN
 
-Access your server privately from anywhere in the world using a VPN. Only authorized devices with the VPN configuration can reach your server and its installed services.
+Access your server privately from anywhere in the world using a VPN. Only authorized devices can reach your server and its installed services.
 
 Think of your server's [gateway](gateways.md) as a defense perimeter with hundreds of locked doors, each door leading to a unique service interface. One door might say "Vaultwarden UI", another "Bitcoin RPC", and another "Bitcoin P2P". An inbound VPN gives authorized devices a key to the doors they need — without opening them to the public Internet.
 
-> [!TIP]
-> [Private domains](private-domains.md) also work over VPN, giving you custom domain names for your services when connected remotely.
+## LAN IP and Private Domains over VPN
+
+Once connected to your VPN, you can reach your server and its services using your server's LAN IP address. The StartOS dashboard is available at the base IP, while each service interface is available on a different port of that same IP.
+
+> [!NOTE]
+> Most VPN clients do not support mDNS, so your server's `.local` address will typically not work over VPN. Use the LAN IP address instead, or set up [private domains](private-domains.md) for friendlier names that work reliably over VPN.
 
 ## Option 1: Router
 
