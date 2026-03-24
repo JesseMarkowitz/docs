@@ -196,17 +196,62 @@ Pass environment variables to a daemon or oneshot via the `env` option on `exec`
 
 ## Health Checks
 
-All user-facing strings must be wrapped with `i18n()`:
+There are two kinds of health checks:
+
+### Daemon Readiness (`ready`)
+
+Every daemon has a `ready` property that tells StartOS when the daemon has started. This is defined inline on the daemon and determines when dependent daemons (via `requires`) can start:
 
 ```typescript
-ready: {
-  display: i18n('Web Interface'),  // Shown in UI
-  fn: () =>
-    sdk.healthCheck.checkPortListening(effects, 8080, {
-      successMessage: i18n('Service is ready'),
-      errorMessage: i18n('Service is not ready'),
-    }),
-},
+.addDaemon('app', {
+  subcontainer: appSub,
+  exec: { command: sdk.useEntrypoint() },
+  ready: {
+    display: i18n('Web Interface'),
+    fn: () =>
+      sdk.healthCheck.checkPortListening(appSub, 8080, {
+        successMessage: i18n('Ready'),
+        errorMessage: i18n('Starting...'),
+      }),
+    gracePeriod: 30_000,  // optional: delay first check (milliseconds)
+  },
+  requires: [],
+})
+```
+
+Use `display: null` for internal daemons (databases, caches) whose readiness check should not be shown to the user.
+
+### Standalone Health Checks (`addHealthCheck`)
+
+For ongoing conditions beyond daemon readiness — sync progress, network reachability, secondary interface availability — use `.addHealthCheck()` in the daemon chain. These run continuously and are displayed to the user. Their IDs are what dependency packages reference in their `healthChecks` array.
+
+```typescript
+.addHealthCheck('sync-progress', {
+  ready: {
+    display: i18n('Sync Progress'),
+    fn: async () => {
+      const res = await appSub.exec(['myapp', 'sync-status'])
+      const synced = res.exitCode === 0
+      return {
+        result: synced ? 'success' : 'loading',
+        message: synced ? 'Fully synced' : 'Syncing...',
+      }
+    },
+  },
+  requires: ['app'],  // only runs after 'app' daemon is ready
+})
+```
+
+A health check can also return `result: 'disabled'` with an informational message when the check does not apply (e.g., reachability check when no public address is configured).
+
+Standalone health checks can be conditional — return `null` instead of the config object to skip the check entirely:
+
+```typescript
+.addHealthCheck('optional-feature', () =>
+  featureEnabled
+    ? { ready: { display: i18n('Feature'), fn: checkFn }, requires: ['app'] }
+    : null,
+)
 ```
 
 ## Volume Mounts
