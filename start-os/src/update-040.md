@@ -11,6 +11,25 @@ StartOS 0.4.0 is a completely new operating system. It will eventually be availa
 
 StartOS 0.4.0 is currently in beta. The latest beta release is available on the [GitHub releases page](https://github.com/Start9Labs/start-os/releases/latest).
 
+### Services with special handling
+
+The following services cannot be migrated automatically. Review these before starting the update:
+
+- **Embassy Pages** — Retired and replaced by **Start9 Pages**. Embassy Pages will survive the update but will no longer receive updates. Uninstall it, install Start9 Pages from the marketplace, and re-add your content.
+
+- **Ghost** — Completely redesigned for StartOS 0.4.0 and incompatible with the old version. Before updating, open your old Ghost admin UI and use Ghost's built-in **Export** tool to download your content. After updating, install the new Ghost from the marketplace and use Ghost's built-in **Import** tool to restore your content.
+
+- **Synapse** — The old Synapse was Tor-only. The new Synapse is clearnet-only. These are different services now with no migration path.
+
+### LAN addresses are changing
+
+In StartOS 0.3.x, each service had its own `.local` address (e.g. `longexamplepublickey.local`). In 0.4.0, services are accessed on unique ports of your server's main `.local` address (e.g. `adjective-noun.local:4545`). Your old per-service `.local` addresses will no longer exist after the update.
+
+If you use a password manager, before updating, make sure your saved passwords have clear names/labels (not just the current `.local` URLs) so that you can identify them later and save the new URLs.
+
+> [!TIP]
+> This change is a big improvement for Windows users — per-service `.local` addresses required Bonjour and other workarounds that are no longer needed.
+
 ## Step 1: Flash the USB Drive
 
 Download the 0.4.0-beta ISO for your platform from the [GitHub releases page](https://github.com/Start9Labs/start-os/releases/latest). Under "ISO Downloads" at the top of the release notes, select the ISO for your hardware:
