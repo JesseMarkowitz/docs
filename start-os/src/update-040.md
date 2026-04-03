@@ -112,9 +112,9 @@ Some services modify data during their first startup on 0.4.0. After all service
 
 ### Tor Cleanup
 
-During migration, the **Tor** service is automatically installed with all your existing onion addresses intact. However, Tor is rarely needed in StartOS 0.4.0 — most users will be better served by [LAN](lan.md), [VPN](inbound-vpn.md), [clearnet](clearnet.md), or [Holesail](holesail.md) access.
+During migration, the **Tor** service is automatically installed with all your existing onion addresses intact. However, Tor is rarely needed in StartOS 0.4.0 — most users will be better served by other networking options.
 
-You are encouraged to review your service interfaces and delete any Tor addresses you no longer need. To manage onion addresses, open the Tor service and go to **Actions > Manage Onion Services**.
+You are encouraged to review your service interfaces and delete any Tor addresses you do not intend to use.
 
 ### Explore the New System
 
