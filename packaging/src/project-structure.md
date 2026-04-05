@@ -10,8 +10,9 @@ A StartOS package follows this organizational pattern:
 my-service-startos/
 ├── .github/
 │   └── workflows/
-│       ├── buildService.yml   # CI build on push/PR
-│       └── releaseService.yml # Release on tag push
+│       ├── build.yml          # CI build on PR
+│       ├── tagAndRelease.yml  # Version check, tag, and release on merge
+│       └── release.yml        # Release on manual tag push
 ├── assets/                 # Supplementary files (required, can be empty)
 │   └── ABOUT.md
 ├── startos/                # Primary development directory
@@ -62,21 +63,26 @@ These files typically require minimal modification:
 
 ### .github/workflows/
 
-Every package should include two GitHub Actions workflows that delegate to [shared-workflows](https://github.com/start9labs/shared-workflows):
+Every package should include three GitHub Actions workflows that delegate to [shared-workflows](https://github.com/start9labs/shared-workflows). The CI pipeline has two automatic stages, plus an optional manual path:
 
-**buildService.yml** -- builds the `.s9pk` on push/PR:
+```
+PR opened/updated ──> Build
+PR merged to master ──> Version check ──> Tag ──> Build ──> Release ──> Publish
+Manual tag push ──> Build ──> Release ──> Publish (bypasses version check)
+```
+
+Tags created by GitHub Actions (via `GITHUB_TOKEN`) do not trigger other workflows. The tag pushed by **tagAndRelease** will _not_ trigger the standalone **release.yml** — instead, tagAndRelease calls release directly as a reusable workflow. The standalone **release.yml** only runs when a tag is pushed manually.
+
+**build.yml** -- builds the `.s9pk` on PR to verify it compiles:
 
 ```yaml
-name: Build Service
+name: Build
 
 on:
   workflow_dispatch:
   pull_request:
-    paths-ignore: ["*.md"]
     branches: ["master"]
-  push:
     paths-ignore: ["*.md"]
-    branches: ["master"]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
@@ -85,15 +91,44 @@ concurrency:
 jobs:
   build:
     if: github.event.pull_request.draft == false
-    uses: start9labs/shared-workflows/.github/workflows/buildService.yml@master
+    uses: start9labs/shared-workflows/.github/workflows/build.yml@master
     secrets:
       DEV_KEY: ${{ secrets.DEV_KEY }}
 ```
 
-**releaseService.yml** -- publishes on tag push:
+**tagAndRelease.yml** -- on merge to master, checks the version against the production registry. If the version already exists, the workflow exits gracefully without building. Otherwise, creates a release tag, then builds and publishes to the test registry. If a new commit arrives while a previous run is still in progress, the old run is cancelled:
 
 ```yaml
-name: Release Service
+name: Tag and Release
+
+on:
+  push:
+    branches: ["master"]
+    paths-ignore: ["*.md"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tag-and-release:
+    uses: start9labs/shared-workflows/.github/workflows/tagAndRelease.yml@master
+    with:
+      REFERENCE_REGISTRY: ${{ vars.REFERENCE_REGISTRY }}
+      RELEASE_REGISTRY: ${{ vars.RELEASE_REGISTRY }}
+      S3_S9PKS_BASE_URL: ${{ vars.S3_S9PKS_BASE_URL }}
+    secrets:
+      DEV_KEY: ${{ secrets.DEV_KEY }}
+      S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
+      S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
+    permissions:
+      contents: write
+```
+
+**release.yml** -- publishes on manual tag push, for re-releases or testing. This workflow only triggers on manually pushed tags — tags created by tagAndRelease (via `GITHUB_TOKEN`) do not trigger it:
+
+```yaml
+name: Release
 
 on:
   push:
@@ -102,9 +137,9 @@ on:
 
 jobs:
   release:
-    uses: start9labs/shared-workflows/.github/workflows/releaseService.yml@master
+    uses: start9labs/shared-workflows/.github/workflows/release.yml@master
     with:
-      REGISTRY: ${{ vars.REGISTRY }}
+      RELEASE_REGISTRY: ${{ vars.RELEASE_REGISTRY }}
       S3_S9PKS_BASE_URL: ${{ vars.S3_S9PKS_BASE_URL }}
     secrets:
       DEV_KEY: ${{ secrets.DEV_KEY }}
@@ -116,7 +151,7 @@ jobs:
 
 ### CONTRIBUTING.md
 
-Build instructions for contributors. Keep it short -- link to the [StartOS Packaging Guide](https://docs.start9.com/packaging/) for environment setup, then provide `npm ci` and `make` as a quick start.
+Build instructions and CI pipeline overview for contributors. Keep it short -- link to the [StartOS Packaging Guide](https://docs.start9.com/packaging/) for environment setup, provide `npm ci` and `make` as a quick start, and describe how the CI pipeline handles builds and releases.
 
 ### Dockerfile (optional)
 
