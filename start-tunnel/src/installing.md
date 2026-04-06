@@ -69,7 +69,7 @@ If you already have a StartOS server and have [trusted its Root CA](/start-os/tr
 
 Select **Generate** when prompted. StartTunnel will create its own Root CA and use it to sign a certificate. The Root CA will be printed to the console.
 
-Save the URL and password to your password manager, then trust the Root CA on each device that will access the web UI. Select your operating system:
+Trust the Root CA on each device that will access the web UI. Select your operating system:
 
 {{#tabs global="platform" }}
 {{#tab name="Mac" }}
@@ -95,7 +95,7 @@ Save the URL and password to your password manager, then trust the Root CA on ea
 
 1. Open the Notepad app.
 
-1. Copy and paste your Root CA from the console output.
+1. Copy and paste your Root CA from the console output (including `-----BEGIN CERTIFICATE-----` and `-----END CERTIFICATE-----`).
 
 1. Save the file as `tunnel-ca.crt` (plaintext).
 
@@ -106,7 +106,7 @@ Save the URL and password to your password manager, then trust the Root CA on ea
 
 1. Open a text editor (gedit, nano, etc.).
 
-1. Copy and paste your Root CA from the console output.
+1. Copy and paste your Root CA from the console output (including `-----BEGIN CERTIFICATE-----` and `-----END CERTIFICATE-----`).
 
 1. Save the file as `tunnel-ca.crt` (plaintext).
 
