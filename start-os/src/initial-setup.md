@@ -2,6 +2,11 @@
 
 After [installing StartOS](installing-startos.md), follow these steps to initialize your server, set a master password, and download your Root CA.
 
+## Watch The Video
+
+<div class="yt-video" data-id="S5v0LW3BNj4" data-title="Initial Setup"></div>
+
+
 1. Connect your server to power and Ethernet.
 
 1. From a computer connected to the same Local Area Network (LAN) as your server, open a browser and visit [http://start.local](http://start.local).

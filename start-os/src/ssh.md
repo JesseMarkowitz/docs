@@ -5,6 +5,10 @@ Like other Linux distributions, StartOS allows you to go "under-the-hood" via Se
 > [!WARNING]
 > Accessing your server via SSH is considered advanced. Please use caution, you can cause permanent damage to your server, potentially resulting in loss of data.
 
+## Watch The Video 
+
+<div class="yt-video" data-id="qi5H_JzcRVk" data-title="SSH"></div>
+
 ## Using your StartOS Master Password
 
 1.  Open a terminal on your client device and enter:
