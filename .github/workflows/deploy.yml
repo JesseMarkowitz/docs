@@ -23,12 +23,6 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Build docs agent widget
-        run: |
-          cd widget
-          npm ci
-          npm run build
-
       - name: Install mdBook
         run: |
           MDBOOK_VERSION='v0.5.2'

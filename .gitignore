@@ -1,7 +1,3 @@
 docs/
 node_modules/
 .DS_Store
-
-theme/docs-agent.js
-theme/docs-agent.css
-theme/docs-agent.js.map

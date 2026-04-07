@@ -20,8 +20,7 @@ Built with [mdBook](https://rust-lang.github.io/mdBook/) and deployed via rsync 
 On push to `master`, GitHub Actions:
 1. Builds all books into versioned `docs/` output directories
 2. Generates `llms.txt` and `llms-full.txt` for LLM consumption
-3. Indexes the content for the embedded [Start Bot](widget/) chat widget via RAG ([Voyage AI](https://www.voyageai.com/) embeddings + [support-server](https://github.com/Start9Labs/support-server) semantic search)
-4. Deploys to the VPS via rsync and reloads nginx
+3. Deploys to the VPS via rsync and reloads nginx
 
 ## Getting Started
 

@@ -48,7 +48,6 @@ start-docs/
 │       └── archival-vs-pruned.md, electrum-servers.md, ...
 ├── landing/              ← Static landing page at docs.start9.com/
 ├── theme/                ← Shared theme (CSS, JS, favicon)
-├── widget/               ← docs-agent chat widget (TypeScript)
 ├── scripts/              ← Build-time tooling
 ├── build.sh              ← Builds all books
 └── serve.sh              ← Builds + local dev server
@@ -62,7 +61,6 @@ This design was chosen over a single monolithic book because:
 ## Shared Theme
 
 The `theme/` directory at repo root is the single source of truth for styling. Each book symlinks to it (`start-os/theme -> ../theme`). This includes:
-- docs-agent widget CSS/JS
 - YouTube embed styling
 - mdbook-tabs CSS/JS
 - Theme toggle

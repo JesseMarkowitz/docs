@@ -137,4 +137,4 @@ You are encouraged to review your service interfaces and delete any Tor addresse
 
 ### Explore the New System
 
-Take time to explore the new UI and read the documentation. StartOS 0.4.0 is a fundamentally different system from 0.3.x. The docs include a support chat where you can get help using your support access code.
+Take time to explore the new UI and read the documentation. StartOS 0.4.0 is a fundamentally different system from 0.3.x.
