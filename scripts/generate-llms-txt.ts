@@ -42,7 +42,7 @@ const bookInfo: Record<string, { label: string; description: string }> = {
   "start-tunnel": {
     label: "StartTunnel",
     description:
-      "A self-hosted WireGuard VPN for private remote access and clearnet hosting of your personal server.",
+      "A virtual private router (VPR) — a minimal, self-hosted router that runs on a VPS. Use it for private remote access to self-hosted services, or to expose services to the public Internet.",
   },
   packaging: {
     label: "Service Packaging",
