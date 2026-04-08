@@ -37,6 +37,7 @@
 - [Remote](remote-access.md)
 - [Private](private-access.md)
 - [Public](public-access.md)
+- [Networking Strategy](networking-strategy.md)
 
 ---
 

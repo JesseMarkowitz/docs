@@ -2,7 +2,7 @@
 
 A private domain works like your server's [mDNS address](mdns.md), except it also works over [VPN](inbound-vpn.md) and it can be _anything_. It can be a real domain you control, a made up domain, or even a domain controlled by someone else.
 
-Private domains can only be accessed when connected to the same LAN as your server, either physically or via VPN, and they require trusting your server's Root CA.
+Private domains can only be added to wired (Ethernet) or wireless (WiFi) gateways — not WireGuard (StartTunnel) gateways. They can only be accessed when connected to the same LAN as your server, either physically or via VPN, and they require trusting your server's Root CA.
 
 ## Adding a Private Domain
 

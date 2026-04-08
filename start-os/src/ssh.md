@@ -32,6 +32,22 @@ Like other Linux distributions, StartOS allows you to go "under-the-hood" via Se
 
 ## Using SSH Keys
 
+### Create an SSH key
+
+If you don't already have an SSH key pair on your laptop or desktop, open a terminal and run:
+
+```bash
+ssh-keygen -t ed25519
+```
+
+Press Enter to accept the default file location, and optionally set a passphrase. Your public key will be at `~/.ssh/id_ed25519.pub`.
+
+### Add your key to StartOS
+
+1.  Copy your public key to clipboard:
+
+        cat ~/.ssh/id_ed25519.pub
+
 1.  In the StartOS UI, go to `System > SSH`
 
 1.  Click `Add Key`, paste in your key and click `Save`

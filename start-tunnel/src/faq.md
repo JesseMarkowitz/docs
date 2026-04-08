@@ -38,6 +38,8 @@ StartTunnel is designed to run on a dedicated VPS. To remove it, simply destroy 
 
 Any provider that offers Debian 12+ with root access and a public IP. Common choices include Hetzner, DigitalOcean, Linode, Vultr, and OVH. Budget VPS providers (~$5/mo) work fine — StartTunnel has minimal resource requirements.
 
+Some providers (AWS, Google Cloud, Azure, Oracle Cloud, IONOS) have cloud-panel firewalls that block WireGuard (UDP 51820) by default. See [Installing — Cloud firewalls](installing.md#cloud-firewalls) for setup instructions.
+
 ## Does StartTunnel provide DDoS protection?
 
 No. Your VPS IP is exposed on forwarded ports. Use your VPS provider's built-in DDoS protection, or place a CDN in front if needed. See the [Architecture](./architecture.md) page for a full comparison of trade-offs.

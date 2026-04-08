@@ -6,9 +6,19 @@ Install StartTunnel on a Debian VPS by renting a server, running the one-line in
 
 <div class="yt-video" data-id="JGhBFZ0hNOU" data-title="Installing StartTunnel"></div>
 
+## Prerequisites
+
+Before setting up a VPS, make sure you have an SSH key pair on your laptop or desktop — this is how you'll log into the server. Most providers require you to upload your public key during server creation. If you don't have one yet, open a terminal on your computer and run:
+
+```bash
+ssh-keygen -t ed25519
+```
+
+Your public key will be at `~/.ssh/id_ed25519.pub`. You'll paste its contents into your VPS provider's dashboard when creating the server.
+
 ## Get a VPS
 
-Rent a cheap Debian 12+ VPS with a dedicated public IP. Minimum CPU/RAM/disk is fine. For bandwidth, no need to exceed your home Internet's upload speed.
+Rent a cheap VPS with a dedicated public IP. Minimum CPU/RAM/disk is fine. For bandwidth, no need to exceed your home Internet's upload speed.
 
 ### Requirements
 
@@ -19,9 +29,105 @@ Rent a cheap Debian 12+ VPS with a dedicated public IP. Minimum CPU/RAM/disk is 
 > [!IMPORTANT]
 > StartTunnel is designed to be the sole application on your VPS. The installer disables UFW and manages its own firewall rules via iptables. Do not run other Internet-facing services on the same VPS.
 
+### Cloud firewalls
+
+Some VPS providers have a **cloud-panel firewall** that sits outside the operating system. This firewall can silently block WireGuard traffic (UDP 51820) before it ever reaches your VPS, even if the OS firewall is correctly configured. If your provider is listed below, you must open UDP 51820 in the cloud panel **before** devices can connect.
+
+> [!NOTE]
+> Providers like Hetzner, DigitalOcean, Vultr, and Linode have optional cloud firewalls that are **not** enabled by default. If you haven't explicitly enabled one, no action is needed.
+
+{{#tabs global="cloud-firewall" }}
+{{#tab name="IONOS" }}
+
+IONOS VPSes have a hardware-level firewall that by default only allows TCP 22, 80, 443, 8443, and 8447. UDP 51820 is blocked before it reaches the VM.
+
+1. Log into the [IONOS Cloud Panel](https://my.ionos.com).
+1. Go to **Server & Cloud** → select your VPS → **Network** → **Firewall Policies**.
+1. Add an inbound rule: **Protocol** = UDP, **Port** = 51820.
+1. Save and apply.
+
+{{#endtab }}
+{{#tab name="Oracle Cloud" }}
+
+Oracle Cloud has **two** firewalls that both need to be opened: the VCN Security List (cloud-level) and OS-level iptables rules pre-installed on the image.
+
+**Cloud-level (Security List):**
+
+1. In the OCI Console, go to **Networking** → **Virtual Cloud Networks** → select your VCN.
+1. Select your subnet's **Security List**.
+1. Add an **Ingress Rule**: Source CIDR = `0.0.0.0/0`, IP Protocol = UDP, Destination Port Range = `51820`.
+
+**OS-level (if using Oracle Linux):**
+
+```bash
+sudo firewall-cmd --add-port=51820/udp --permanent
+sudo firewall-cmd --reload
+```
+
+> [!WARNING]
+> Both layers must be opened. Opening only one will still block WireGuard.
+
+{{#endtab }}
+{{#tab name="AWS" }}
+
+EC2 instances use **Security Groups** that deny all inbound traffic by default.
+
+1. In the EC2 Console, go to your instance → **Security** → click the **Security Group**.
+1. Under **Inbound rules**, click **Edit inbound rules**.
+1. Add a rule: **Type** = Custom UDP, **Port range** = 51820, **Source** = 0.0.0.0/0.
+1. Save.
+
+{{#endtab }}
+{{#tab name="Google Cloud" }}
+
+GCE uses **VPC Firewall Rules** that only allow TCP 22, TCP 3389, and ICMP by default.
+
+1. In the Cloud Console, go to **VPC Network** → **Firewall**.
+1. Click **Create Firewall Rule**.
+1. Set: Direction = Ingress, Targets = All instances (or a specific network tag), Source = `0.0.0.0/0`, Protocol = UDP, Port = `51820`.
+1. Save.
+
+{{#endtab }}
+{{#tab name="Azure" }}
+
+Azure VMs get a **Network Security Group** that only allows SSH (TCP 22) by default.
+
+1. In the Azure Portal, go to your VM → **Networking**.
+1. Click **Add inbound port rule**.
+1. Set: Source = Any, Destination port = `51820`, Protocol = UDP, Action = Allow.
+1. Save.
+
+{{#endtab }}
+{{#endtabs }}
+
+## Connect to your VPS
+
+{{#tabs global="ssh-auth" }}
+{{#tab name="SSH key (most providers)" }}
+
+Most providers let you add an SSH public key during server creation. If you did, connect with:
+
+```bash
+ssh root@<VPS_IP>
+```
+
+{{#endtab }}
+{{#tab name="Root password" }}
+
+Some providers (notably IONOS standard VPS) only provide a root password at provisioning — no SSH key option. If your provider emailed or displayed a root password, connect with:
+
+```bash
+ssh root@<VPS_IP>
+```
+
+Enter the password when prompted.
+
+{{#endtab }}
+{{#endtabs }}
+
 ## Run the installer
 
-SSH into your VPS and run:
+Run:
 
 ```bash
 curl -sSL https://start9labs.github.io/start-tunnel/install.sh | sh
