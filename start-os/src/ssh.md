@@ -5,9 +5,13 @@ Like other Linux distributions, StartOS allows you to go "under-the-hood" via Se
 > [!WARNING]
 > Accessing your server via SSH is considered advanced. Please use caution, you can cause permanent damage to your server, potentially resulting in loss of data.
 
-## Watch The Video 
+## Watch The Video
 
 <div class="yt-video" data-id="qi5H_JzcRVk" data-title="SSH"></div>
+
+## User and privileges
+
+The SSH user is `start9`, not `root`. Root login is disabled. The `start9` user has `sudo` privileges, so commands requiring root should use `sudo`. There is no need to run `sudo -i` or `sudo su`.
 
 ## Using your StartOS Master Password
 
