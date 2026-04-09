@@ -128,13 +128,13 @@ export const networkXml = FileHelper.xml(
 
 ### Reading Methods
 
-| Method                            | Purpose                                               |
-| --------------------------------- | ----------------------------------------------------- |
-| `.once()`                         | Read once, no reactivity                              |
-| `.const(effects)`                 | Read and re-run the enclosing context if value changes |
-| `.onChange(effects, callback)`    | Register a callback for value changes                 |
-| `.watch(effects)`                 | Create an async iterator of new values                |
-| `.waitFor(effects, predicate)`   | Block until the value satisfies a predicate           |
+| Method                         | Purpose                                                |
+| ------------------------------ | ------------------------------------------------------ |
+| `.once()`                      | Read once, no reactivity                               |
+| `.const(effects)`              | Read and re-run the enclosing context if value changes |
+| `.onChange(effects, callback)` | Register a callback for value changes                  |
+| `.watch(effects)`              | Create an async iterator of new values                 |
+| `.waitFor(effects, predicate)` | Block until the value satisfies a predicate            |
 
 > [!NOTE]
 > All read methods return `null` if the file doesn't exist. Do NOT use try-catch for missing files.
@@ -185,7 +185,7 @@ const syncedStore = await storeJson
 
 Use `merge()` for almost all writes. It has two major advantages:
 
-1. **Preserves unknown keys**: `merge()` only updates the fields you specify, leaving everything else intact — including keys that the upstream service uses but your file model doesn't define. `write()` replaces the entire file, destroying any keys not in your schema.
+1. **Preserves unknown keys**: `merge()` only updates the fields you specify, leaving everything else intact — including keys that the upstream service uses but your file model doesn't define. `write()` replaces the entire file, destroying any keys not in your schema. See [Unknown Key Preservation](#unknown-key-preservation) for details and migration implications.
 2. **Defaults come from the schema**: When every key in your zod schema has a `.catch()`, the schema _is_ the default. You can seed a file on first install with `merge(effects, {})` — the `.catch()` values fill in every missing field. No need to define a separate defaults object and pass it to `write()`.
 
 ```typescript
@@ -308,39 +308,39 @@ The `.catch()` callback delegates back to the child schema, so defaults are defi
 When a schema has multiple levels of nesting, extract each level into its own variable. This keeps the top-level shape readable and ensures `.catch()` works at every depth:
 
 ```typescript
-import { FileHelper, z } from '@start9labs/start-sdk'
-import { sdk } from '../sdk'
+import { FileHelper, z } from "@start9labs/start-sdk";
+import { sdk } from "../sdk";
 
 // Level 2: nested object
-const dbDefault = { path: '/data/app.db', journal_mode: 'wal' }
+const dbDefault = { path: "/data/app.db", journal_mode: "wal" };
 const dbShape = z
   .object({
-    path: z.literal('/data/app.db').catch(dbDefault.path),
+    path: z.literal("/data/app.db").catch(dbDefault.path),
     journal_mode: z.string().catch(dbDefault.journal_mode),
   })
-  .catch(dbDefault)
+  .catch(dbDefault);
 
 // Level 2: array item
-const endpointDefault = { port: 8080, tls: false }
+const endpointDefault = { port: 8080, tls: false };
 const endpointShape = z
   .object({
     port: z.number().catch(endpointDefault.port),
     tls: z.boolean().catch(endpointDefault.tls),
   })
-  .catch(endpointDefault)
+  .catch(endpointDefault);
 
 // Top level
 const shape = z.object({
   database: dbShape,
   endpoints: z.array(endpointShape).catch([endpointDefault]),
-  log_level: z.string().catch('info'),
-  max_upload_size: z.string().catch('50M'),
-})
+  log_level: z.string().catch("info"),
+  max_upload_size: z.string().catch("50M"),
+});
 
 export const configYaml = FileHelper.yaml(
-  { base: sdk.volumes.main, subpath: 'config.yaml' },
+  { base: sdk.volumes.main, subpath: "config.yaml" },
   shape,
-)
+);
 ```
 
 The key technique: define each nested level's default and shape separately, then compose them. Every level has its own `.catch()` so missing or malformed data at any depth resolves to sane defaults.
@@ -363,6 +363,33 @@ const shape = z.object({
 ```
 
 This pattern is especially useful for upstream config files where you need to lock down certain values while still letting the user configure others through actions.
+
+### Unknown Key Preservation
+
+The SDK patches `z.object()` to use loose mode by default — unknown keys in the parsed data are **preserved**, not stripped. This is intentional: upstream config files often contain keys your schema doesn't model (auto-generated secrets, internal state, plugin settings, etc.), and stripping them would break the service.
+
+This has two important consequences:
+
+1. **`merge()` never removes keys you don't mention.** Only keys explicitly passed to `merge()` are updated. Everything else — including keys outside your schema — passes through untouched.
+2. **Stale keys from previous versions persist.** If an earlier version of your package wrote keys that the current version no longer uses, those keys survive across updates. They are not automatically cleaned up by `merge()` or by the zod schema.
+
+To **delete a stale key**, pass it as `undefined` in a `merge()` call:
+
+```typescript
+// Remove keys that no longer exist in the current version
+await configToml.merge(effects, {
+  old_deprecated_key: undefined,
+  removed_plugin_setting: undefined,
+});
+```
+
+When stale keys are outside your schema's type, cast the merge data:
+
+```typescript
+await configToml.merge(effects, {
+  legacy_key: undefined,
+} as any);
+```
 
 ### Using SDK-Provided Schemas
 

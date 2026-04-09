@@ -49,7 +49,7 @@ This guide is for flashing StartOS to a USB drive, then installing it onto a des
 1. Power on your server, booting from USB.
 
    > [!TIP]
-   > Occasionally, you may need to make some changes in your BIOS, such as turning off Secure Boot, or allowing USB boot for install. See the [Community Hub](https://community.start9.com) for guides or to get help.
+   > Some devices do not automatically boot from USB. In these cases, you will need to access your device's BIOS settings and change the boot order to prioritize the USB drive. This is known to be required on the **Nvidia DGX Spark**, among others. You may also need to turn off Secure Boot or explicitly allow USB boot. See the [Community Hub](https://community.start9.com) for device-specific guides or to get help.
 
 1. The StartOS install wizard will now be available at `http://start.local`. You can also use a monitor, keyboard, and mouse. This is known as "Kiosk Mode".
 
