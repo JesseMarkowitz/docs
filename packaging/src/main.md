@@ -256,11 +256,11 @@ Every daemon has a `ready` property that tells StartOS when the daemon has start
   ready: {
     display: i18n('Web Interface'),
     fn: () =>
-      sdk.healthCheck.checkPortListening(appSub, 8080, {
+      sdk.healthCheck.checkPortListening(effects, 8080, {
         successMessage: i18n('Ready'),
         errorMessage: i18n('Starting...'),
       }),
-    gracePeriod: 30_000,  // optional: delay first check (milliseconds)
+    gracePeriod: 30_000,  // optional: treat failures as "starting" for this long (ms)
   },
   requires: [],
 })
@@ -299,6 +299,54 @@ Standalone health checks can be conditional — return `null` instead of the con
     ? { ready: { display: i18n('Feature'), fn: checkFn }, requires: ['app'] }
     : null,
 )
+```
+
+### Health Check Result States
+
+The `fn` returns an object with `result` and `message`:
+
+| Result | Meaning | When to use |
+|--------|---------|-------------|
+| `success` | Healthy and fully operational | Service is ready and serving |
+| `loading` | Operational but catching up | Syncing blocks, indexing data |
+| `disabled` | Intentionally inactive | Feature excluded by config (e.g. onlynet) |
+| `starting` | Not yet ready | Still initializing (also set automatically during `gracePeriod`) |
+| `failure` | Unhealthy | Process crashed, port not listening, dependency unreachable |
+
+`loading` and `failure` require a `message` string. Other states accept an optional message.
+
+### Built-in Health Check Helpers
+
+Available on `sdk.healthCheck`:
+
+- **`checkPortListening(effects, port, { successMessage, errorMessage })`** — checks if a TCP/UDP port is bound by reading `/proc/net`. Lightweight, no network I/O. Preferred for daemon readiness checks.
+- **`checkWebUrl(effects, url, { successMessage, errorMessage })`** — fetches a URL, succeeds on any HTTP response.
+- **`runHealthScript(command, subcontainer, { errorMessage })`** — runs a command in a subcontainer, succeeds on exit code 0.
+
+### Polling Triggers
+
+By default, health checks poll every 1 s while the daemon is pending, then every 30 s once it reports a non-pending result (`success`, `loading`, or `disabled`). Override this with the `trigger` option on `ready`:
+
+```typescript
+ready: {
+  display: i18n('Sync Progress'),
+  trigger: sdk.trigger.cooldownTrigger(30_000),  // fixed 30s interval
+  fn: async () => { /* ... */ },
+}
+```
+
+Available triggers on `sdk.trigger`:
+
+- **`cooldownTrigger(ms)`** — fixed interval between checks, regardless of status.
+- **`statusTrigger(defaultMs, { success?, loading?, disabled?, starting?, waiting?, failure? })`** — per-status polling intervals in milliseconds. The first argument is the default interval for any status not explicitly listed.
+
+Use a slower trigger for expensive checks (RPC calls during heavy processing) to reduce load on the service:
+
+```typescript
+trigger: sdk.trigger.statusTrigger(30_000, {
+  starting: 5_000,
+  failure: 5_000,
+}),
 ```
 
 ## Volume Mounts
