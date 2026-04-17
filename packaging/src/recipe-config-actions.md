@@ -4,7 +4,7 @@ Many services need user-configurable settings — log levels, feature toggles, r
 
 ## Solution
 
-Use `sdk.Action.withInput()` with an `InputSpec` built from `Value.select()`, `Value.number()`, `Value.toggle()`, etc. The prefill function reads current values from a file model with `.read().once()`. The handler writes new values with `fileModel.merge()`, which preserves any keys not in the input.
+Use `sdk.Action.withInput()` with an `InputSpec` built from `Value.select()`, `Value.number()`, `Value.toggle()`, `Value.triState()`, etc. The prefill function reads current values from a file model with `.read().once()`. The handler writes new values with `fileModel.merge()`, which preserves any keys not in the input.
 
 **Reference:** [Actions](actions.md) · [File Models](file-models.md)
 
