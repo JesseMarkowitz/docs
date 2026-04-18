@@ -50,7 +50,7 @@ Select your platform:
 
 1. You will see your server's CA certificate as trusted now, signified by a blue (+) sign and the CA cert information will now say "This certificate is marked as trusted for all users" in Keychain Access:
 
-1. If using Firefox, Thunderbird, or Librewolf, complete this [final step](#mac--windows).
+1. If using Firefox, Thunderbird, or Librewolf, complete this [final step](#3-mozilla-apps-firefox-thunderbird-librewolf).
 
 {{#endtab }}
 {{#tab name="Windows" }}
@@ -79,7 +79,7 @@ Select your platform:
 
 1. You can save the console settings (where we added a snap-in), if desired. Your Root CA will remain imported to the CA certificate store either way, and you will likely use this guide if you need to import a new certificate.
 
-1. If using Firefox, Thunderbird, or Librewolf, complete this [final step](#mac--windows).
+1. If using Firefox, Thunderbird, or Librewolf, complete this [final step](#3-mozilla-apps-firefox-thunderbird-librewolf).
 
 {{#endtab }}
 {{#tab name="iOS" }}
@@ -127,16 +127,17 @@ This should work for most Debian-based systems, such as Debian, Ubuntu, Mint, Po
 
         cd ~/Downloads
 
-1.  Add your Root CA to your OS trust store. Be certain to replace `your-server-name` with your server's unique hostname:
+1.  Add your Root CA to your OS trust store. Be certain to replace `your-server-name` with your server's unique hostname on the first line:
 
+        hostname=your-server-name
         sudo mkdir -p /usr/share/ca-certificates/start9
-        sudo cp "your-server-name.crt" /usr/share/ca-certificates/start9/
-        sudo bash -c "echo 'start9/your-server-name.crt' >> /etc/ca-certificates.conf"
+        sudo cp "${hostname}.crt" /usr/share/ca-certificates/start9/
+        sudo bash -c "echo 'start9/${hostname}.crt' >> /etc/ca-certificates.conf"
         sudo update-ca-certificates
 
     If successful, you will see the output `1 added`.
 
-1.  If using Firefox, Thunderbird, or Librewolf, complete this [final step](#debian--ubuntu-1).
+1.  If using Firefox, Thunderbird, or Librewolf, complete this [final step](#3-mozilla-apps-firefox-thunderbird-librewolf).
 
 {{#endtab }}
 {{#tab name="Arch / Garuda" }}
