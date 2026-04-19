@@ -112,20 +112,22 @@ When the update is complete, follow the on-screen instructions to remove the USB
 
 Every installed service will have an update available for the 0.4.0 marketplace. Update **all** of them — including Bitcoin — before doing anything else. The 0.4.0 versions are repackaged for the new system, even if the underlying software version is the same.
 
-## Step 14: Create a Fresh Backup
-
-Before starting any services, create a [full system backup](backup-create.md) to a **fresh drive**.
-
-> [!WARNING]
-> Backups from StartOS 0.3.5.1 **cannot** be restored onto 0.4.0. You need a 0.4.0 backup. This is your safety net going forward — do not skip it.
-
-## Step 15: Start Your Services
+## Step 14: Start All Services
 
 Once all services are updated and backed up, you can start them. Wait for all services to fully start and confirm they are running correctly.
 
-## Step 16: Create a Second Backup
+## Step 15: Create a Backup!
 
-Some services modify data during their first startup on 0.4.0. After all services have started successfully, create another [full system backup](backup-create.md) to capture this post-startup state.
+Create a [full system backup](backup-create.md). Ideally this is to a separate drive (or network folder) than 0.3.5.
+
+> [!WARNING]
+> 0.3.5 backups and 0.4.0 backups are **ENTIRELY INCOMPATIBLE**. 0.3.5 backups **cannot** be restored onto 0.4.0. and 0.4.0 backups **cannot** be restored on 0.3.5.1.
+
+If backing up to the same drive as 0.3.5, a new subfolder will be created automatically. Just be sure the drive has enough space to hold both complete backups.
+
+Remember, regenerable indexes, such as the Bitcoin block chain and Electrs/Fulcrum indexes, are _not_ backed up. This is a good thing.
+
+Depending on the speed of your drive, plan on 3-5 minutes per GB of backup data. So 100 GB of data could take over 8 hours. 0.4.0 backups are _differential_ in nature, so future backups will only include new or deleted files and therefore should be much faster.
 
 ## Post-Migration Notes
 
