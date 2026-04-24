@@ -149,13 +149,17 @@ When making changes to the StartOS wrapper without upstream changes:
 2. Increment downstream revision
 3. Create new version file
 
+### Within an Alpha Stage: Rename In-Place
+
+While iterating within the alpha stage (`-alpha.0` → `-alpha.1` → `-alpha.2`), don't create a new file for every bump. Rename the existing version file, update the version string and export name, keep `other: []`, and move on. The alpha stage is a rolling pre-release — the version history you'd keep here is mostly churn.
+
 ### Promoting Prereleases
 
-To promote from alpha to beta to stable:
+To promote from alpha to beta to stable (or beta to stable):
 
-1. Create new version file without prerelease suffix (or with next stage)
-2. Update `index.ts` to export new version as current
-3. Move old version to `other` array
+1. Create a new version file without the prerelease suffix (or with the next stage)
+2. Update `index.ts` to export the new version as `current`
+3. Move the old version to the `other` array — this is where migration history starts
 
 ## Migrations
 
@@ -228,3 +232,24 @@ export const initializeService = sdk.setupOnInit(async (effects, kind) => {
   })
 })
 ```
+
+## Git Tag Conventions
+
+Releases are published via git tags. The StartOS tag format is:
+
+```
+v{upstream_version}_{wrapper_revision}-{prerelease}
+```
+
+| Package version      | Git tag                   |
+| -------------------- | ------------------------- |
+| `2.1.0:7-beta.5`     | `v2.1.0_7-beta.5`         |
+| `0.13.5:0-alpha.0`   | `v0.13.5_0-alpha.0`       |
+| `26.0.0:0`           | `v26.0.0_0`               |
+
+Conventions:
+
+- **Underscore between upstream and wrapper.** The `:` from the version string becomes `_` in the tag — tags can't contain colons.
+- **No package-name prefix.** The tag is just the version, not `myservice-v2.1.0_7-beta.5`.
+- **Keep the prerelease suffix** (`-alpha.N` / `-beta.N` / `-rc.N`) when the version has one.
+- **Push tags individually** (`git push origin <tag>`), not with `git push --tags`.

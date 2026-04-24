@@ -58,7 +58,7 @@ export const initializeService = sdk.setupOnInit(async (effects, kind) => {
       charset: 'a-z,A-Z,0-9',
       len: 22,
     })
-    await storeJson.write(effects, { adminPassword })
+    await storeJson.merge(effects, { adminPassword })
   }
 })
 ```
@@ -81,7 +81,7 @@ export const initializeService = sdk.setupOnInit(async (effects, kind) => {
     charset: 'a-z,A-Z,0-9',
     len: 22,
   })
-  await storeJson.write(effects, { adminPassword })
+  await storeJson.merge(effects, { adminPassword })
 
   // Create task prompting user to retrieve password
   await sdk.action.createOwnTask(effects, getAdminPassword, 'critical', {
@@ -268,10 +268,29 @@ export const initializeService = sdk.setupOnInit(async (effects, kind) => {
     // Generate new passwords, bootstrap server
   }
 
-  if (kind !== null) {
-    // Runs on install, update, OR restore (skip container rebuild)
-  }
+  if (!kind) return
+  // Reached only on install/update/restore — skips container rebuild.
 
   // No check: runs on ALL init types (install, update, restore, container rebuild)
 })
 ```
+
+> [!TIP]
+> `if (!kind) return` is the common guard for "install, update, or restore — but not a plain container rebuild." The inverse (`if (kind) return`) would mean "only on rebuild" — almost never what you want.
+
+### Empty-Seed Inits: Drop the `kind` Parameter
+
+When a `setupOnInit` does nothing but seed file models with their schema defaults (`fileModel.merge(effects, {})`), drop the `kind` parameter entirely — the overhead of running on every init is negligible, and it keeps the logic trivially correct:
+
+```typescript
+// init/seedFiles.ts
+export const seedFiles = sdk.setupOnInit(async (effects) => {
+  await storeJson.merge(effects, {})
+  await configToml.merge(effects, {})
+})
+```
+
+Reach for the `kind` check only when the body needs to behave differently between install / update / restore / rebuild.
+
+> [!NOTE]
+> Always use `merge()` (not `write()`) to seed file models, even on first install. With every key in your zod schema carrying a `.catch()`, `merge(effects, {})` is enough to create the file and populate every default. See [File Models — Prefer merge() Over write()](./file-models.md#prefer-merge-over-write).

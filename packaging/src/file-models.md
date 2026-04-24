@@ -364,6 +364,51 @@ const shape = z.object({
 
 This pattern is especially useful for upstream config files where you need to lock down certain values while still letting the user configure others through actions.
 
+### Reparse `raw` Through Shape in `formToFile`
+
+When a `FileHelper.ini` uses an `InputSpec`'s `partialValidator` as its validator and exposes the raw file as `raw: Value.hidden(shape)`, `formToFile` must reparse `rawInput` through `shape` before spreading it. Otherwise, the first install seed writes an empty file — the enforced `.catch()` defaults in `shape` never fire, and the daemon starts with upstream defaults instead of the locked-down values.
+
+```typescript
+export const shape = z.object({
+  "rpc-bind-ip": z.literal("0.0.0.0").catch("0.0.0.0"),
+  "rpc-bind-port": z.literal(18081).catch(18081),
+  // ...more enforced + configurable keys
+});
+
+export const fullConfigSpec = InputSpec.of({
+  raw: Value.hidden(shape),
+  // ...user-facing form fields
+});
+
+function formToFile(
+  input: T.DeepPartial<typeof fullConfigSpec._TYPE>,
+): Conf {
+  const { raw: rawInput, ...rest } = input;
+
+  // Reparse through shape so .catch() defaults fire when rawInput is undefined.
+  const raw = shape.parse(rawInput ?? {});
+
+  return {
+    ...raw,
+    // ...form-derived fields
+  };
+}
+
+export const confFile = FileHelper.ini(
+  { base: sdk.volumes.main, subpath: "my.conf" },
+  fullConfigSpec.partialValidator,
+  { bracketedArray: false },
+  {
+    onRead: (a) => fileToForm(shape.parse(a)),
+    onWrite: (a) => formToFile(a),
+  },
+);
+```
+
+**Why it matters:** `partialValidator` makes every field of `fullConfigSpec` optional — including `raw`. On first install (`confFile.merge(effects, {})` from `seedFiles`), `rawInput` arrives `undefined`, so `...raw` spreads nothing. zod's `.catch()` defaults only fire under `shape.parse()`. Calling `shape.parse(rawInput ?? {})` is what forces them. On subsequent writes, `onRead` has already produced a fully populated conf, so the reparse is idempotent.
+
+**Alternative:** Some packages (`bitcoin-core`, `cln`) hardcode the enforced values in both `shape` (`z.literal(X).catch(X)`) _and_ again inside `formToFile`. That works but duplicates the source of truth — two places to update if a value changes. The reparse keeps `shape` as the single source.
+
 ### Unknown Key Preservation
 
 The SDK patches `z.object()` to use loose mode by default — unknown keys in the parsed data are **preserved**, not stripped. This is intentional: upstream config files often contain keys your schema doesn't model (auto-generated secrets, internal state, plugin settings, etc.), and stripping them would break the service.
@@ -403,6 +448,23 @@ const shape = z.object({
   smtp: smtpShape,
 });
 ```
+
+### Don't Call `.strip()` on Your Shape
+
+The SDK intentionally patches `z.object()` to loose mode (see [Unknown Key Preservation](#unknown-key-preservation)) so unknown keys from the upstream service survive. Calling `.strip()` on your shape disables that protection and will silently destroy user data on the next `merge()` — keys outside your schema get discarded. Leave the default alone; only use `.strict()` if you have a specific reason to reject unknowns.
+
+## Migration Gotchas
+
+### Parser / Separator Transitions Can Wipe Data
+
+If you change a FileHelper's parser or separator on an already-released package — e.g. switching from `FileHelper.ini` (npm `ini`, `=` separator) to `FileHelper.raw` with a custom parser that uses `: ` — existing on-disk files may silently decay under the new code. The old format isn't recognized, every section parses as `{}`, zod `.catch()` defaults fill in, and the defaulted object is stringified back in the new format. Real user data (passwords, custom settings) gets quietly replaced with defaults.
+
+`.catch()` defaults are great for new installs but mask exactly this class of error — there is no parse failure to observe.
+
+Before shipping a parser change:
+
+- Verify the new parser actually reads what the **old** code and the upstream service wrote. If not, plan a one-shot migration that rewrites the file in the new format as part of the version upgrade.
+- When diagnosing a "field silently became empty / default" bug after an update, check git history for parser, separator, or FileHelper implementation changes on the affected file model.
 
 ## Design Guidelines
 

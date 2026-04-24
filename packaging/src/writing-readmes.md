@@ -23,8 +23,8 @@ Write for two audiences:
 > **Upstream docs:** <https://docs.example.com/>
 >
 > Everything not listed in this document should behave the same as upstream
-> [Service Name] [version]. If a feature, setting, or behavior is not mentioned
-> here, the upstream documentation is accurate and fully applicable.
+> [Service Name]. If a feature, setting, or behavior is not mentioned here,
+> the upstream documentation is accurate and fully applicable.
 
 [Brief description of what the service does and link to upstream repo]
 
@@ -90,8 +90,6 @@ Write for two audiences:
 
 ```yaml
 package_id: string
-upstream_version: string
-image: string
 architectures: [list]
 volumes:
   volume_name: mount_path
@@ -103,6 +101,9 @@ startos_managed_env_vars:
 actions:
   - action-id
 ```
+
+> [!IMPORTANT]
+> Do not include `upstream_version`, image tags, or dependency version constraints in the YAML block (or anywhere else in the README). The manifest is the single source of truth for versions — README version references go stale on every bump and create misinformation. If a user wants to know the version, they can look at the manifest or the service page.
 ````
 
 ## Sections to Document
@@ -212,8 +213,8 @@ End every README with a YAML block for machine parsing. This block should contai
 
 ## Pre-Publish Checklist
 
+- [ ] Centered logo header at the top of the file
 - [ ] Upstream docs linked at the top
-- [ ] Upstream version stated
 - [ ] All volumes and mount points documented
 - [ ] All actions documented with their purpose
 - [ ] All StartOS-managed settings/env vars listed
@@ -221,5 +222,6 @@ End every README with a YAML block for machine parsing. This block should contai
 - [ ] All limitations listed explicitly
 - [ ] "What Is Unchanged" section included
 - [ ] YAML quick reference block for AI consumers
+- [ ] No specific version numbers anywhere (image tags, upstream version, dep version constraints — all stale the moment you bump)
 - [ ] Tested that documented features match actual behavior
 - [ ] `CONTRIBUTING.md` exists with build instructions
