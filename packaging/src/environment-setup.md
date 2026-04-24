@@ -84,7 +84,7 @@ start-cli --version
 
 ## Coding with Claude (Recommended)
 
-AI coding tools like [Claude Code](https://docs.anthropic.com/en/docs/claude-code) can dramatically accelerate your packaging workflow. To get the best results, set up a workspace that gives Claude direct access to the packaging guide.
+AI coding tools like [Claude Code](https://docs.anthropic.com/en/docs/claude-code) can dramatically accelerate your packaging workflow. If you are using Claude, Start9 highly recommends using the Opus 4.7 or later model. To get the best results, set up a workspace that gives Claude direct access to the packaging guide.
 
 ### 1. Create a workspace directory
 
@@ -115,13 +115,7 @@ This file instructs Claude to use the local packaging guide as its primary refer
 
 ### 4. Add your package repo
 
-Clone or create your package repo inside the workspace:
-
-```
-git clone https://github.com/user/my-service-startos.git
-```
-
-Your workspace should look like this:
+Your workspace should look like this once you complete [Quick Start](../quick-start.md):
 
 ```
 my-workspace/
