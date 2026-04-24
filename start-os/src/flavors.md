@@ -4,7 +4,7 @@ Flavors are different services that share the same package ID. They are differen
 
 ## Version Format
 
-Flavor versions are designated by their exver prefix: `#flavor:upstream-semver:downstream-semver`. For more details on version formatting, see [Exver](/packaging/src/exver.md).
+Flavor versions are designated by their exver prefix: `#flavor:upstream-semver:downstream-semver`. For more details on version formatting, see [Versions](/packaging/src/versions.md).
 
 ## Limitations
 
