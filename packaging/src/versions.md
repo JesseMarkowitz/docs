@@ -132,6 +132,17 @@ export const versionGraph = VersionGraph.of({
 
 ## Incrementing Versions
 
+### When to Create a New Version File
+
+A new file in `startos/versions/` is only needed if **either** of the following is true:
+
+1. **The new version contains an `up` or `down` migration.** Create the file, then add the prior version to the `other` array in `index.ts` so the migration runs when users upgrade through it.
+2. **You want the prior version's release notes preserved in git history.** Create the file with the new version string and notes. The prior version file can be deleted; it does **not** need to be added to `other`.
+
+If **neither** applies, update the existing version file in place: rename it to the new version string, update its `version` and `releaseNotes` fields, leave `other: []`. No new file.
+
+This keeps `versions/` lean and the migration graph easy to read.
+
 ### Upstream Update
 
 When the upstream project releases a new version:
@@ -147,7 +158,7 @@ When making changes to the StartOS wrapper without upstream changes:
 
 1. Keep upstream version the same
 2. Increment downstream revision
-3. Create new version file
+3. Apply the [new-file rule](#when-to-create-a-new-version-file) — most wrapper-only bumps do not need a new file
 
 ### Within an Alpha Stage: Rename In-Place
 
