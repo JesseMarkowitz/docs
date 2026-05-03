@@ -37,16 +37,16 @@ If you encounter Diagnostic Mode, your best bet is stop clicking and [contact su
 
 ## I am unable to connect to my server's "server-name.local" URL
 
-1. First, try :ref:`these step <setup-troubleshoot>`. In none resolve the issue, continue below.
+1. First, try [these steps](#during-initial-setup-i-am-unable-to-connect-to-startlocal). If none resolve the issue, continue below.
 
 1. Hard refresh the browser:
    - Linux/Windows: `ctrl+shift+R`
    - macOS Firefox: `cmd+shift+R`
    - macOS Safari: `cmd+option+E`, then `cmd+R`
 
-1. Make sure you have successfully followed the :ref:`connecting-lan` instructions for your device.
+1. Make sure you have successfully followed the [Local Access](lan.md) instructions for your device.
 
-1. If using Firefox from Mac, Windows or Android, ensure you have set `security.enterprise_roots.enable` to `true` in `about:config` per the :ref:`instructions<ca-ff>`
+1. If using Firefox from Mac, Windows or Android, ensure you have set `security.enterprise_roots.enable` to `true` in `about:config` per the [instructions](trust-ca.md#3-mozilla-apps-firefox-thunderbird-librewolf)
 
 1. Try connecting using your server's IP address. If this works, it means your issue is specific to `.local`. Try clearing your browser cache and/or restarting your phone/laptop/router. If all fails, try restarting your server.
 
