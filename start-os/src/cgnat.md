@@ -30,7 +30,6 @@ CGNAT does **not** affect:
 
 - **[LAN access](lan.md)** — Devices on your local network connect directly, bypassing the ISP entirely.
 - **[Tor](tor.md)** — Tor routes through its overlay network using only outbound connections.
-- **[Holesail](holesail.md)** — Holesail uses peer-to-peer hole-punching that works behind NAT.
 - **[Outbound VPN](outbound-vpn.md)** — Outbound connections are not blocked by CGNAT.
 
 ## The Solution: StartTunnel

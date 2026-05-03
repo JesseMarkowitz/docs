@@ -19,4 +19,4 @@ Connect to your server over your local network using its [mDNS address](mdns.md)
 
 ## Tunnels Do Not Work Locally
 
-[Holesail](holesail.md) and [VPN](inbound-vpn.md) tunnels will not work when your device is on the same LAN as your server due to loopback. To test a tunnel-based connection, disconnect your device from WiFi and use mobile data instead.
+[VPN](inbound-vpn.md) tunnels will not work when your device is on the same LAN as your server due to loopback. To test a tunnel-based connection, disconnect your device from WiFi and use mobile data instead.

@@ -47,7 +47,6 @@
 - [Inbound VPN](inbound-vpn.md)
 - [Outbound VPN](outbound-vpn.md)
 - [Tor](tor.md)
-- [Holesail](holesail.md)
 - [Clearnet](clearnet.md)
 - [Public IP](public-ip.md)
 - [Gateways](gateways.md)

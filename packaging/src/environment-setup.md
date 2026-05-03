@@ -121,7 +121,7 @@ Clone or create your package repo inside the workspace:
 git clone https://github.com/user/my-service-startos.git
 ```
 
-Your workspace should look like this:
+### 5. Your workspace should look like this:
 
 ```
 ai-workspace/

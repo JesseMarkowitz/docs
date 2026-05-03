@@ -3,7 +3,7 @@
 Public connections make your services reachable by anyone on the Internet, not just your own devices. This is for services you intentionally want to share — a personal website, a Nostr relay, a Lightning node, or a Nextcloud instance for your family. If only you and your own devices need access, use [private](private-access.md) connections instead.
 
 > [!WARNING]
-> If your ISP uses [CGNAT](cgnat.md), your router cannot accept inbound connections. Clearnet hosting and public IP access require a [StartTunnel](/start-tunnel/) gateway. Tor and Holesail work regardless of CGNAT.
+> If your ISP uses [CGNAT](cgnat.md), your router cannot accept inbound connections. Clearnet hosting and public IP access require a [StartTunnel](/start-tunnel/) gateway. Tor works regardless of CGNAT.
 
 ## Clearnet, Tor, and Public IP
 

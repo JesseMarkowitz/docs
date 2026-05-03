@@ -89,10 +89,6 @@ A gateway is a WireGuard tunnel that routes traffic between a StartOS server and
 
 StartOS auto-detects the gateway type from the WireGuard configuration file. A system-wide default gateway can be set, and individual services can override it.
 
-### Holesail
-
-Holesail is available as a marketplace service for peer-to-peer tunneling using the Hyperswarm DHT. It provides an alternative to Tor for remote access without port forwarding.
-
 ## State Management
 
 StartOS uses **Patch-DB**, a custom diff-based database, to manage system state. The key property of Patch-DB is reactive synchronization: when the backend mutates state, the frontend receives only the diff (patch) over a WebSocket connection. This means the UI always reflects the current system state without polling.

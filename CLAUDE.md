@@ -30,7 +30,7 @@ See README.md for what this project is, CONTRIBUTING.md for how to work on it, a
 
 ## Product Context
 
-- **StartOS 0.4.0**: Tor is a marketplace service (not built into StartOS core). Holesail is also a marketplace service. Outbound gateways support a system default plus per-service override.
+- **StartOS 0.4.0**: Networking strategies that aren't built into StartOS core (Tor, P2P tunnels, etc.) are distributed as marketplace services. Outbound gateways support a system default plus per-service override.
 - **Packaging guide**: The docs are the single source of truth for service packaging. Code examples are based on the [hello-world](https://github.com/Start9Labs/hello-world-startos) template.
 - **StartTunnel**: A WireGuard-based gateway service for clearnet access. Separate product, separate book.
 - **Bitcoin Guides**: Wallet indexes, Electrum servers, archival vs pruned nodes, LND migration. The Bitcoin package on StartOS integrates btc-rpc-proxy for on-demand block fetching, so pruned nodes work transparently with multiple downstream services.
