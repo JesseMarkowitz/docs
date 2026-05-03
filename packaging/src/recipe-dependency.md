@@ -4,7 +4,7 @@ When your service needs another StartOS service (e.g., Bitcoin Core for a wallet
 
 ## Solution
 
-In `setupDependencies()`, return an object mapping dependency package IDs to their requirements: `kind: 'running'` (must be running and healthy), `kind: 'exists'` (just installed), a `versionRange`, and `healthChecks` specifying which of the dependency's health checks must pass. Read the dependency's connection info in `setupMain` either via `sdk.serviceInterface.get()` or directly as `http://<package-id>.startos:<port>`.
+In `setupDependencies()`, return an object mapping dependency package IDs to their requirements: `kind: 'running'` (must be running and healthy), `kind: 'exists'` (just installed), a `versionRange`, and `healthChecks` specifying which of the dependency's daemons or standalone health checks must pass. Read the dependency's connection info in `setupMain` either via `sdk.serviceInterface.get()` or directly as `http://<package-id>.startos:<port>`.
 
 **Reference:** [Dependencies](dependencies.md)
 

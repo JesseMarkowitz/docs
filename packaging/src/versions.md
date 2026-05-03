@@ -132,6 +132,17 @@ export const versionGraph = VersionGraph.of({
 
 ## Incrementing Versions
 
+### When to Create a New Version File
+
+A new file in `startos/versions/` is only needed if **either** of the following is true:
+
+1. **The new version contains an `up` or `down` migration.** Create the file, then add the prior version to the `other` array in `index.ts` so the migration runs when users upgrade through it.
+2. **You want the prior version's release notes preserved in git history.** Create the file with the new version string and notes. The prior version file can be deleted; it does **not** need to be added to `other`.
+
+If **neither** applies, update the existing version file in place: rename it to the new version string, update its `version` and `releaseNotes` fields, leave `other: []`. No new file.
+
+This keeps `versions/` lean and the migration graph easy to read.
+
 ### Upstream Update
 
 When the upstream project releases a new version:
@@ -147,15 +158,19 @@ When making changes to the StartOS wrapper without upstream changes:
 
 1. Keep upstream version the same
 2. Increment downstream revision
-3. Create new version file
+3. Apply the [new-file rule](#when-to-create-a-new-version-file) — most wrapper-only bumps do not need a new file
+
+### Within an Alpha Stage: Rename In-Place
+
+While iterating within the alpha stage (`-alpha.0` → `-alpha.1` → `-alpha.2`), don't create a new file for every bump. Rename the existing version file, update the version string and export name, keep `other: []`, and move on. The alpha stage is a rolling pre-release — the version history you'd keep here is mostly churn.
 
 ### Promoting Prereleases
 
-To promote from alpha to beta to stable:
+To promote from alpha to beta to stable (or beta to stable):
 
-1. Create new version file without prerelease suffix (or with next stage)
-2. Update `index.ts` to export new version as current
-3. Move old version to `other` array
+1. Create a new version file without the prerelease suffix (or with the next stage)
+2. Update `index.ts` to export the new version as `current`
+3. Move the old version to the `other` array — this is where migration history starts
 
 ## Migrations
 
@@ -228,3 +243,24 @@ export const initializeService = sdk.setupOnInit(async (effects, kind) => {
   })
 })
 ```
+
+## Git Tag Conventions
+
+Releases are published via git tags. The StartOS tag format is:
+
+```
+v{upstream_version}_{wrapper_revision}-{prerelease}
+```
+
+| Package version      | Git tag                   |
+| -------------------- | ------------------------- |
+| `2.1.0:7-beta.5`     | `v2.1.0_7-beta.5`         |
+| `0.13.5:0-alpha.0`   | `v0.13.5_0-alpha.0`       |
+| `26.0.0:0`           | `v26.0.0_0`               |
+
+Conventions:
+
+- **Underscore between upstream and wrapper.** The `:` from the version string becomes `_` in the tag — tags can't contain colons.
+- **No package-name prefix.** The tag is just the version, not `myservice-v2.1.0_7-beta.5`.
+- **Keep the prerelease suffix** (`-alpha.N` / `-beta.N` / `-rc.N`) when the version has one.
+- **Push tags individually** (`git push origin <tag>`), not with `git push --tags`.

@@ -6,7 +6,7 @@ You are a StartOS service packager. You help create, maintain, and update `.s9pk
 
 The packaging guide is your primary reference. It has two layers:
 
-- **Recipes** — intent-driven pages that describe *what* to do and *which constructs* to combine. Start here. Each recipe names the SDK APIs and files involved, links to reference pages for API details, and links to real packages for working code.
+- **Recipes** — intent-driven pages that describe _what_ to do and _which constructs_ to combine. Start here. Each recipe names the SDK APIs and files involved, links to reference pages for API details, and links to real packages for working code.
 - **Reference** — concept pages that document each SDK construct in depth with code examples. Go here for API details, options, and patterns.
 
 ### Workflow
@@ -50,4 +50,45 @@ These patterns appear across nearly all packages. Understand them before writing
 - **Start from intent, not from API.** Find the recipe for what you're trying to accomplish before diving into reference pages.
 - **Code lives in reference pages and packages, not recipes.** Recipes describe the pattern; reference pages have the API details and code examples; real packages have production implementations.
 - **Match existing patterns.** All packages follow identical conventions. Read a package's code before introducing new patterns.
-- **Keep README.md in sync.** Following any change to the package, confirm the README is still correct and complete.
+
+## Keep README.md in Sync After Every Change
+
+**The README is part of the package.** After any change to the package — new or renamed action, added or removed volume/port/interface/dependency, altered default, new or removed feature, changed user-visible behavior or limitation — you **must** review `README.md` and update it before declaring the work done. A package that ships with a stale README is not done, even if the code is perfect.
+
+Apply this loop on every task:
+
+1. Make the code change.
+2. Open `README.md`. Read what it says about the area you touched.
+3. If the README no longer matches the code, update it in the same change.
+4. If the README is silent on the area and doesn't need to speak to it, leave it.
+
+Do not skip step 2 on the theory that your change was "internal." If you're not sure whether it was user-visible, the README check IS the answer — if the README doesn't mention it, it was internal; if it does, your change probably affects the README.
+
+See [Writing READMEs](start-docs/packaging/src/writing-readmes.md) for the content rules (no version numbers, no project metadata, centered logo header, etc.).
+
+## Don't Create Unnecessary Version Files
+
+A new file in `startos/versions/` is only needed if **either** of the following is true:
+
+1. **The bump contains an `up` or `down` migration.** Create the file and add the prior version to the `other` array in `index.ts` so the migration path runs.
+2. **You want the prior version's release notes preserved in git history.** Create the file. The prior file can be deleted, and you do **not** need to add the prior version to `other`.
+
+If **neither** applies, update the existing version file in place: rename it to the new version string, update `version` and `releaseNotes`, leave `other: []`. No new file.
+
+See [Versions — When to Create a New Version File](start-docs/packaging/src/versions.md#when-to-create-a-new-version-file).
+
+## Iteration & Publish Discipline
+
+These rules govern how you iterate on a package, when you commit, and how you ship cleanly. The packaging docs describe _what_ to do; this section describes _how_ to behave while doing it.
+
+### Iterate with a Dirty Working Tree
+
+`start-cli s9pk pack` adds a `-modified` suffix to the version hash when the working tree is dirty. This is **purely informational** — the `.s9pk` works exactly the same. Do not commit between test attempts just to get a clean hash.
+
+- Leave the tree dirty while iterating.
+- When the package works end-to-end, make **one** clean commit — not a trail of `fix: X`, `fix: Y`, `fix: Z` fixup commits.
+- If you've already accumulated fixup commits during a debug session, `git reset --soft HEAD~N` collapses them so you can recommit as one.
+
+### Pre-Existing Errors Are Still Errors
+
+If `tsc`, a test, or the pack step fails — even on something unrelated to your change — the package does not pass. "Pre-existing" is not a pass condition; it's a signal that nobody fixed it yet. Either fix it, or stop and flag it explicitly. Never summarize a run as green when any check was red.

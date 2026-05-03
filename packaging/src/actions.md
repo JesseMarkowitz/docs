@@ -227,6 +227,44 @@ export const configure = sdk.Action.withInput(
 
 The five arguments to `withInput` are: action ID, metadata (static object or async function), input spec, prefill function, and handler.
 
+## Conventions
+
+### Wrap User-Facing Strings in `i18n()`
+
+Every string that a user will see — action `name`, `description`, `warning`, `reason` on tasks, messages on health checks and action results — must be wrapped in `i18n()`. Raw strings bypass translation and leak English into non-English locales. The existing examples on this page illustrate the pattern: `name: i18n('Configure SMTP')`, not `name: 'Configure SMTP'`.
+
+### Mirror File-Model Keys in InputSpec When Appropriate
+
+When an action's job is "set these fields on this file-model section," name the `InputSpec` keys to match the file-model keys exactly — same casing, same spelling. The prefill and handler collapse to one-liners:
+
+```typescript
+// fileModels/config.json uses uppercase snake_case keys under MEMPOOL
+const spec = InputSpec.of({
+  BLOCKS_SUMMARIES_INDEXING: Value.toggle({ /* ... */ }),
+  GOGGLES_INDEXING:          Value.toggle({ /* ... */ }),
+  AUDIT:                     Value.toggle({ /* ... */ }),
+  CPFP_INDEXING:             Value.toggle({ /* ... */ }),
+})
+
+sdk.Action.withInput(
+  'configure-indexing',
+  { /* metadata */ },
+  spec,
+  async ({ effects }) => configJson.read((c) => c.MEMPOOL).once(),
+  async ({ effects, input }) => configJson.merge(effects, { MEMPOOL: input }),
+)
+```
+
+Benefits:
+
+- Prefill and write collapse to direct pass-throughs — no manual object-literal mapping on either side.
+- If the file model later adds or removes a field the action exposes, TypeScript flags the mismatch instead of silently dropping it.
+
+**When not to mirror:** if the action transforms values, combines multiple inputs, writes to multiple sections, or writes to a section where the file-model keys aren't a good user-facing vocabulary. In those cases, use human-readable camelCase input names and do the mapping in the handler.
+
+> [!NOTE]
+> Action prefills use `.once()`, not `.const(effects)`. `.const()` sets up a reactive watcher meant for `setupMain` — it's wasted overhead in a prefill, which is a one-shot read at the moment the form opens.
+
 ## SMTP Configuration
 
 The SDK provides a built-in SMTP input specification for managing email credentials. This supports three modes: disabled, system SMTP (from StartOS settings), or custom SMTP with provider presets (Gmail, Amazon SES, SendGrid, Mailgun, Proton Mail, or custom).
@@ -353,7 +391,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
 In `init/initializeService.ts`, set the default SMTP state:
 
 ```typescript
-await storeJson.write(effects, {
+await storeJson.merge(effects, {
   adminPassword,
   secretKey,
   smtp: { selection: "disabled", value: {} },

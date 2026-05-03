@@ -3,7 +3,7 @@
 In order to establish a secure (HTTPS) connection with your server on the local network, it is necessary to download and trust your server's Root Certificate Authority (Root CA).
 
 > [!Note]
-> You must repeat this guide for each device you want to connect to the server locally or using a VPN. This guide is _not_ necessary for devices that will connect using Tor, Holesail, or clearnet.
+> You must repeat this guide for each device you want to connect to the server locally or using a VPN. This guide is _not_ necessary for devices that will connect using Tor or clearnet.
 
 ## Watch the video
 

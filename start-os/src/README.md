@@ -38,7 +38,6 @@ StartOS is a sovereign computing platform that makes it easy to run a personal s
 - [Inbound VPN](inbound-vpn.md)
 - [Outbound VPN](outbound-vpn.md)
 - [Tor](tor.md)
-- [Holesail](holesail.md)
 - [Clearnet](clearnet.md)
 - [Public IP](public-ip.md)
 - [Gateways](gateways.md)

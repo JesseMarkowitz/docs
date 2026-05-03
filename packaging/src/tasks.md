@@ -38,7 +38,7 @@ export const initializeService = sdk.setupOnInit(async (effects, kind) => {
   if (kind !== 'install') return
 
   const adminPassword = utils.getDefaultString({ charset: 'a-z,A-Z,0-9', len: 22 })
-  await storeJson.write(effects, {
+  await storeJson.merge(effects, {
     adminPassword,
     smtp: { selection: 'disabled', value: {} },
   })
@@ -59,7 +59,7 @@ export const initializeService = sdk.setupOnInit(async (effects, kind) => {
 
   if (kind === 'install') {
     const adminPassword = utils.getDefaultString({ charset: 'a-z,A-Z,0-9', len: 22 })
-    await storeJson.write(effects, { adminPassword })
+    await storeJson.merge(effects, { adminPassword })
   }
 
   await sdk.action.createOwnTask(effects, getAdminCredentials, 'critical', {
@@ -122,7 +122,19 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
 | `input`    | `{ kind: 'partial', value: Partial<InputSpec> }`      | Pre-fill fields in the action's input form                       |
 | `when`     | `{ condition: 'input-not-matches', once: boolean }`   | Re-trigger until the action's input matches the provided values  |
 | `reason`   | `string`                                              | Human-readable explanation shown to the user                     |
-| `replayId` | `string` (optional)                                   | Prevents duplicate tasks across restarts                         |
+| `replayId` | `string` (optional)                                   | Overrides the default idempotency key (see below)                |
 
 > [!NOTE]
 > The dependency must be listed in your `package.json` so the action can be imported (e.g., `"synapse-startos": "file:../synapse-wrapper"`). See [Dependencies](./dependencies.md) for more on cross-service integration.
+
+### Idempotency and `replayId`
+
+Tasks are idempotent by default. The SDK computes a default `replayId` of `[package-id]:[action-id]`, so calling `createOwnTask` / `createTask` multiple times with the same action does **not** create duplicate tasks — subsequent calls are no-ops against the same replay key. You can safely re-run your init function on every container rebuild without accumulating stale tasks.
+
+Provide a custom `replayId` only when you need to intentionally create multiple distinct tasks for the same action (e.g., one-per-peer setup prompts). Each unique `replayId` becomes a separate task.
+
+To cancel a task programmatically, clear it by its replay key:
+
+```typescript
+await sdk.action.clearTask(effects, 'my-service:get-admin-credentials')
+```

@@ -63,7 +63,3 @@ Press Enter to accept the default file location, and optionally set a passphrase
     Replace `SERVER-HOSTNAME` with your server's `your-server-name.local` address.
 
 1.  Enter your key's passphrase (if any)
-
-## Connecting via PuTTY on Windows
-
-For Windows, following the command above will work. But if you prefer a GUI tool, [BrewsBitcoin](https://brewsbitcoin.com) has created a guide for [connecting via SSH using PuTTY on Windows](https://medium.com/@brewsbitcoin/ssh-to-start9-embassy-from-windows-4a4e17891b5a)

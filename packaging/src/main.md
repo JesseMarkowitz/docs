@@ -97,6 +97,10 @@ The second argument to `SubContainer.of()` and `SubContainer.withTemp()` accepts
 
 By default, subcontainers share `/dev` and `/sys` with the host. Setting `sharedRun: true` additionally shares `/run`, giving access to host runtime sockets (D-Bus, systemd, PID files). Most services do not need this -- only use it when the container must communicate with host system services.
 
+### Convention: Inline SubContainer.of()
+
+When a subcontainer is only used by one daemon, inline the `SubContainer.of()` call directly inside `addDaemon()` rather than extracting it into a separate variable. Only extract to a variable when the same subcontainer is reused across multiple daemons, oneshots, or exec calls. See the basic example at the top of this page.
+
 ## Reactive vs One-time Reads
 
 When reading configuration in `main.ts`, you choose how the system responds to changes:
@@ -369,6 +373,25 @@ sdk.Mounts.of()
     type: "file", // Required when mounting a single file
   });
 ```
+
+> [!WARNING]
+> `sdk.Mounts` is an immutable builder. Every `mountVolume` / `mountAssets` / `mountDependency` / `mountBackups` call returns a **new** `Mounts` instance — the original is unchanged. Discarded return values silently drop the mount.
+>
+> ```typescript
+> // BROKEN — conditional mount is lost
+> const mounts = sdk.Mounts.of().mountVolume({ /* ... */ });
+> if (needsCookie) {
+>   mounts.mountDependency({ /* ... */ }); // ← return value discarded
+> }
+>
+> // CORRECT — reassign each time
+> let mounts = sdk.Mounts.of().mountVolume({ /* ... */ });
+> if (needsCookie) {
+>   mounts = mounts.mountDependency({ /* ... */ });
+> }
+> ```
+>
+> Chained calls (`.mountVolume(...).mountDependency(...)`) are fine — the returned instance flows into the next call. The trap is conditional mutation with the return thrown away. Symptom: the file you expected at the mountpoint isn't there, so a `FileHelper.string(...).read()` returns `null` or a subcontainer read fails.
 
 ## Writing to Subcontainer Rootfs
 
