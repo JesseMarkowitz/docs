@@ -46,6 +46,7 @@
 - [Run a Redis/Valkey Cache](recipe-valkey.md)
 - [Create Dynamic Daemons](recipe-dynamic-daemons.md)
 - [Run a One-Shot Command](recipe-oneshot.md)
+- [Run a Nested OCI Runtime](recipe-nested-oci-runtime.md)
 
 ## Networking
 

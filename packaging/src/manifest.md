@@ -205,6 +205,16 @@ images: {
 hardwareAcceleration: true,  // Top-level flag
 ```
 
+### Nested OCI Runtimes (Docker / Podman inside a service)
+
+For services that need to run their own OCI containers — e.g. CI runners like `gitea-act-runner` that spawn build containers per job — set `nestedRuntime: true` at the manifest top level:
+
+```typescript
+nestedRuntime: true,
+```
+
+The flag is opt-in. When set, StartOS exposes `/dev/fuse` and `/dev/net/tun` inside the service's container so a rootless engine (Podman or Docker) can use `fuse-overlayfs` for layered storage and `slirp4netns` (or `pasta`) for networking. Service authors are still responsible for installing the OCI engine in the image and configuring it for rootless mode — see [Run a Nested OCI Runtime](./recipe-nested-oci-runtime.md) for the full recipe (subuid setup, daemon configuration, and the runc wrapper required when using Docker).
+
 ### Multiple Images
 
 Services can define multiple images. Each image needs its own `arch` field:
