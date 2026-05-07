@@ -45,6 +45,7 @@ If you're using [Claude Code](https://claude.com/claude-code) (recommended), poi
 | [Run a Redis/Valkey Cache](recipe-valkey.md) | Ephemeral cache daemon with valkey-cli ping health check |
 | [Create Dynamic Daemons](recipe-dynamic-daemons.md) | Variable number of daemons based on user configuration |
 | [Run a One-Shot Command](recipe-oneshot.md) | Migrations, file ownership fixes, or setup scripts before the main daemon starts |
+| [Run a Nested OCI Runtime](recipe-nested-oci-runtime.md) | Rootless Podman or Docker inside the service for CI runners, build daemons, sandboxed jobs |
 
 ## Networking
 
