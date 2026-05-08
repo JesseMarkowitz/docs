@@ -65,6 +65,10 @@
 - [Back Up and Restore Data](recipe-backups.md)
 - [Add Standalone Health Checks](recipe-health-checks.md)
 
+## User Communication
+
+- [Post a Notification to the User](recipe-notification.md)
+
 # Reference
 
 - [Project Structure](project-structure.md)
