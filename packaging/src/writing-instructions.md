@@ -23,17 +23,17 @@ If your README is a reference manual, your instructions are a quick-start guide 
 
 A good `instructions.md` covers, roughly in this order:
 
-1. **A brief orientation — optional.** The reader already saw the marketplace short and long description before clicking Install, so don't restate them. A one-line "you've installed X — here's how to use it on StartOS" framing is fine; so is genuinely new context the listing didn't cover. If there's nothing to add, skip straight to the next section. Don't pad.
+1. **A brief orientation — usually skip it.** The reader already saw the marketplace short and long description before clicking Install, so don't restate them. The default is to omit this section and go straight to **Documentation**. Add a line only if there is genuinely new context the listing did not cover — a hard ordering constraint, a permanent decision the user is about to make, or similar. "You've installed X" framing is *not* useful; the reader knows. Don't pad.
 
-2. **Documentation links.** A `## Documentation` section with a link to the upstream documentation — a few words on what each one is ("the upstream README", "the official Foo configuration reference") — plus the project home page, support channels, and anything else the user might want when they outgrow these instructions. Put it near the top, right after the orientation: "where do I read more?" is often the highest-value thing on the page. (A longer instructions file can keep it at the end instead.) Link to canonical, stable URLs — the project's docs site or its `master` README, not a specific commit.
+2. **Documentation links.** A `## Documentation` section. Port exactly the URLs the manifest previously carried in its `docsUrls` array, each with a few words on what it is ("the upstream admin guide", "the official Foo configuration reference"). Do not add marketing, donation, project-home, or support-channel links — those live elsewhere and were deliberately omitted from `docsUrls`. Link to canonical, stable URLs the upstream maintains — not specific commits, not your own README.
 
 3. **What it gives you on StartOS** — the practical answer to "why did I just install this?" Keep it concrete: the interfaces it exposes, the data it manages, the experience the StartOS package adds on top of upstream.
 
 4. **Getting set up** — the smallest sequence of steps that takes a fresh install to a usable state. The reader has already installed the service — don't include download or install steps. Start from first launch. Use numbered lists. Reference real action names, real interfaces, and real screens that exist in the StartOS UI for this service. If setup requires a dependency, say so plainly: "Install Bitcoin Core first" rather than "satisfy the dependency."
 
-5. **Using the available features** — once the service is running, what can the user actually do with it? Describe the interfaces (web UI, RPC, etc.), the actions available from the StartOS sidebar, and any first-time tasks they will see prompted by the package.
+5. **Using the available features** — once the service is running, what can the user actually do with it? Describe the interfaces (web UI, RPC, etc.) and the **user-visible** actions. Hidden actions (`visibility: 'hidden'` in the package source — typically those invoked by the platform or by another service rather than by a human) do not belong here; the user never sees them. Likewise, do not parrot `allowedStatuses` from action source code ("the service must be running", "the service must be stopped"): describe what the user actually encounters in the UI, and omit the qualifier when it's noise.
 
-6. **Important limitations** — anything that will surprise the user. Things the upstream version does that this package does not. Features deliberately disabled. Restart-required settings. Performance constraints. Be honest; users prefer "this doesn't support X yet" over discovering it themselves.
+6. **Important limitations — usually omit.** The default is no Limitations section at all. Add one only if there is a specific, consequential thing the user will be surprised by: a deliberately disabled feature they may go looking for, a hard data caveat, an incompatibility worth flagging up front. Generic caveats ("performance depends on your hardware", "encryption keys are sensitive") are not limitations and do not belong here.
 
 > [!NOTE]
 > Older StartOS manifests carried a `docsUrls` array for upstream documentation links. That field has been removed — those links belong in the `## Documentation` section of this file now, where you can give each one the context a bare URL in the manifest never had.
@@ -41,8 +41,13 @@ A good `instructions.md` covers, roughly in this order:
 ## What does not belong in instructions
 
 - **A restatement of the marketplace description.** The reader saw the short and long description before installing — opening with "Foo is a self-hosted bar" wastes their time. Start from "now what."
-- **Install or download steps.** They've already installed the service; that's why they're on this tab. Begin at first launch.
+- **"You've installed X" or any other orientation that tells the reader something they already know.** They installed it; that's why they're on this tab.
+- **Install or download steps.** They've already installed the service. Begin at first launch.
 - **How StartOS itself works.** The interface panel's copy-address / QR-code / LAN-Tor-domain controls, the Dashboard and Instructions tabs, how backups and updates work, how to start or stop a service — these are platform features a user learns once, not per-package. Mention only what's specific to *this* service: which interfaces it exposes and what each is for, which actions it adds and when to run them. Naming a screen to send the user to ("open it from the **Dashboard** tab") is fine; explaining what that screen is, isn't.
+- **Invented navigation paths.** Don't guess at how to reach a UI surface. Reference only screens, tabs, and tables that actually exist in StartOS for *this* service. "Set X in the network settings" is wrong if there is no such page; "add the domain on the Homeserver interface" is right if that's where it actually lives.
+- **Hidden actions.** Actions marked `visibility: 'hidden'` in source — typically those invoked by the platform or by another package's plugin handshake — are not user-facing. Do not list them, even to "explain" them.
+- **Status preconditions for critical tasks.** A critical task suspends every other control: the user does not see a Start / Stop / Run button while the task is required, only the task. Telling them "the service must be stopped" or "start the service first" before running a critical task is not just noise, it's wrong.
+- **Platform plumbing the user can't act on.** "Registration is typically triggered automatically by the bridge service" tells the reader nothing they can do with the information. If they'd never act on a sentence, cut it.
 - **The full configuration reference.** Link to upstream for that.
 - **Version numbers and image tags.** They go stale every release; the manifest is the source of truth.
 - **Architectural detail about how the package is built.** That is the README's job.
@@ -66,13 +71,13 @@ Use the sections that apply — a trivial service might be two paragraphs and a 
 ```markdown
 # [Service Name]
 
-[Optional. One or two sentences only if you have something to add beyond the marketplace short/long description the reader already saw — or a one-line "you've installed X; here's how to use it on StartOS" framing. Otherwise delete this line and start with the section below.]
+[Optional, usually omit. Add one or two sentences only if there is genuinely new context the marketplace listing didn't cover — for example, a hard ordering constraint or a permanent decision the user is about to make. Otherwise delete this line and start with the section below.]
 
 ## Documentation
 
 - [Upstream documentation](https://docs.example.org) — what it is in a few words (the config reference, the upstream README, etc.).
-- [Project home](https://example.org)
-- [Support / community](https://example.org/support)
+
+(Port exactly the URLs the manifest previously carried in `docsUrls`. Don't add marketing, project-home, donation, or support links here.)
 
 ## What you get on StartOS
 
@@ -104,19 +109,20 @@ Use the sections that apply — a trivial service might be two paragraphs and a 
 
 ## Limitations
 
-- [Anything that will surprise a user coming from upstream.]
-- [Features deliberately disabled or not yet supported.]
-- [Restart-required settings, performance caveats, etc.]
+[Usually omit this section entirely. Include only if there is a specific, consequential surprise — a deliberately disabled feature the user may go looking for, an incompatibility worth flagging.]
 ```
 
 ## Pre-publish checklist
 
 - [ ] File exists at `instructions.md` at the package root (the build will fail otherwise).
 - [ ] Written for the user, not the developer — no internal SDK terminology.
-- [ ] Does not restate the marketplace short/long description, contains no install or download steps, and doesn't explain StartOS platform features (interface controls, tabs, backups) the user already knows.
+- [ ] Does not restate the marketplace short/long description, contains no install or download steps, no "You've installed X" framing, and doesn't explain StartOS platform features (interface controls, tabs, backups) the user already knows.
+- [ ] All navigation references point at UI surfaces that actually exist for this service — no invented network-settings pages or pretend tabs.
 - [ ] Setup steps walk from first launch to a usable state.
-- [ ] Every action and interface mentioned actually exists in the package.
+- [ ] Every action and interface mentioned actually exists in the package, and every action mentioned is `visibility: 'enabled'` (hidden actions are not listed).
+- [ ] Status preconditions are described as the user actually sees them — critical tasks are not qualified with "stop the service first"; `allowedStatuses` is not parroted when its gate is invisible to the user.
+- [ ] Every sentence is something the user could act on — no "this is typically triggered automatically by …" plumbing notes.
 - [ ] No hard-coded version numbers, image tags, or secrets.
-- [ ] Limitations section is honest about what the package cannot do.
-- [ ] A `## Documentation` section links the upstream docs (with a few words on what each is) and any other canonical, stable URLs.
+- [ ] Limitations section is omitted unless there is a specific, consequential surprise to flag.
+- [ ] A `## Documentation` section ports the URLs the manifest's `docsUrls` previously carried, each with a few words of context. No added marketing / donation / project-home / support links.
 - [ ] Renders cleanly in the StartOS Instructions tab on a real install.
