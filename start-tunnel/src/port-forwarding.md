@@ -2,6 +2,9 @@
 
 Port forwarding exposes a device's port on your VPS's public IP address. This is how you make services reachable from the public Internet.
 
+> [!WARNING]
+> Port forwarding requires a **dedicated public IPv4 address** on your VPS. Shared IPv4 addresses (CGNAT, shared NAT, load-balanced IPs) and IPv6-only VPSes cannot be used to expose services to the clearnet. Confirm with your VPS provider before purchasing.
+
 1. In StartTunnel, navigate to `Port Forwards` and click "Add".
 
 1. Select the external IP address you want to use (there is usually only one).
