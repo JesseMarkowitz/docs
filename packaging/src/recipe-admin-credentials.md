@@ -1,13 +1,21 @@
 # Prompt User to Create Admin Credentials
 
-After installing a service, the user typically needs admin credentials to log in. The standard pattern creates a critical task during init that points to a hidden action. The action generates a password (or reads one already generated) and displays it to the user. The task blocks the user from ignoring the step.
+Most services need admin credentials before the user can sign in. The standard pattern pairs a `setupOnInit` watcher with a `setAdminPassword` action: the watcher surfaces a critical task when no password is stored, and the action — when the user runs it — generates, stores, and returns the credential. The same action handles later rotation.
 
 ## Solution
 
-In `setupOnInit` (on install), generate a password and store it in a file model. Call `sdk.action.createOwnTask()` with severity `'critical'` pointing to a hidden action. The action reads the stored password and returns it in a group result with username (unmasked, copyable) and password (masked, copyable). Use `visibility: 'hidden'` so the action only appears via the task.
+In `setupOnInit`, read the file model where the admin password lives. When it is unset, call `sdk.action.createOwnTask()` with severity `'critical'` pointing to the `setAdminPassword` action. The action is `sdk.Action.withoutInput`, `visibility: 'enabled'` so users can reach it for rotation, and its handler calls `utils.getDefaultString()`, writes the result to the store, and returns it as a group result (username unmasked + copyable, password masked + copyable).
+
+The shape gives you:
+
+- **One source of truth.** The action is the only place that generates and stores; the init watcher only decides whether to surface the task.
+- **Rotation for free.** Re-running the action overwrites the stored password and returns the new one — the same action covers first-set and reset.
+- **Idempotent inits.** Task creation is idempotent on its replay key, so `setupOnInit` can run on every container rebuild without spamming tasks.
+
+When the upstream service requires the password to be applied via CLI or API (rather than read from the store at startup), wrap the work in `sdk.SubContainer.withTemp()` inside the action handler and run the upstream command before returning — see the [Reset a Password](recipe-reset-password.md) recipe for the temp-subcontainer shape.
 
 **Reference:** [Initialization](init.md) · [Tasks](tasks.md) · [Actions](actions.md)
 
 ## Examples
 
-See `startos/init/` and `startos/actions/` in: [actual-budget](https://github.com/Start9Labs/actual-budget-startos), [gitea](https://github.com/Start9Labs/gitea-startos), [helipad](https://github.com/Start9Labs/helipad-startos), [lightning-terminal](https://github.com/Start9Labs/lightning-terminal-startos), [lnbits](https://github.com/Start9Labs/lnbits-startos), [nextcloud](https://github.com/Start9Labs/nextcloud-startos), [openclaw](https://github.com/Start9Labs/openclaw-startos), [vaultwarden](https://github.com/Start9Labs/vaultwarden-startos)
+See `startos/init/` and `startos/actions/` in: [canary](https://github.com/Start9-Community/canary-startos) (cleanest reference — `watchCredentials.ts` + `setAdminPassword.ts`), [openclaw](https://github.com/Start9-Community/openclaw-startos) (`setPassword.ts`), [vaultwarden](https://github.com/Start9Labs/vaultwarden-startos) (`admin-token.ts`), [bisq](https://github.com/Start9-Community/bisq-startos), [helipad](https://github.com/Start9Labs/helipad-startos), [btcpayserver](https://github.com/Start9Labs/btcpayserver-startos), [lnbits](https://github.com/Start9Labs/lnbits-startos), [actual-budget](https://github.com/Start9Labs/actual-budget-startos), [gitea](https://github.com/Start9Labs/gitea-startos) (uses `withInput` to also take username/email; generates the password server-side).

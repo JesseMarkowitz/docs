@@ -7,8 +7,8 @@ Tasks are notifications that appear in the StartOS UI prompting the user to run 
 Use `sdk.action.createOwnTask()` to prompt the user to run one of your service's own actions.
 
 ```typescript
-await sdk.action.createOwnTask(effects, getAdminCredentials, 'critical', {
-  reason: i18n('Retrieve the admin password'),
+await sdk.action.createOwnTask(effects, setAdminPassword, 'critical', {
+  reason: i18n('Set the admin password before signing in'),
 })
 ```
 
@@ -23,57 +23,36 @@ await sdk.action.createOwnTask(effects, getAdminCredentials, 'critical', {
 
 ### Severity Levels
 
-- **critical** — Blocks the service from starting until the user completes the task. Use for essential setup like retrieving generated passwords or selecting a backend.
+- **critical** — Blocks the service from starting until the user completes the task. Use for essential setup like creating admin credentials or selecting a backend.
 - **important** — Prominently displayed but does not block the service. Use for post-install reminders like disabling registrations.
 - **optional** — Informational, least prominent.
 
 ## Common Patterns
 
-### Prompt on Install Only
+### Prompt When Credentials Are Unset
 
-Generate a password and prompt the user to retrieve it. Skip on restore (password already exists) and container rebuild:
-
-```typescript
-export const initializeService = sdk.setupOnInit(async (effects, kind) => {
-  if (kind !== 'install') return
-
-  const adminPassword = utils.getDefaultString({ charset: 'a-z,A-Z,0-9', len: 22 })
-  await storeJson.merge(effects, {
-    adminPassword,
-    smtp: { selection: 'disabled', value: {} },
-  })
-
-  await sdk.action.createOwnTask(effects, getAdminCredentials, 'critical', {
-    reason: i18n('Retrieve the admin password'),
-  })
-})
-```
-
-### Prompt on Install and Restore
-
-Useful when the user should always be reminded of credentials, even after restoring from backup:
+The standard admin-credentials pattern: init reads the store and surfaces a critical task when the password is unset. Generation lives in the matching action, which covers both first-set and later rotation. The watcher runs on every init kind; the prompt is idempotent (see [Idempotency and `replayId`](#idempotency-and-replayid)), so a container rebuild after the password is set is a no-op:
 
 ```typescript
-export const initializeService = sdk.setupOnInit(async (effects, kind) => {
-  if (kind === null) return // Skip on container rebuild
+export const watchCredentials = sdk.setupOnInit(async (effects) => {
+  const store = await storeJson.read().const(effects)
 
-  if (kind === 'install') {
-    const adminPassword = utils.getDefaultString({ charset: 'a-z,A-Z,0-9', len: 22 })
-    await storeJson.merge(effects, { adminPassword })
+  if (!store?.adminPassword) {
+    await sdk.action.createOwnTask(effects, setAdminPassword, 'critical', {
+      reason: i18n('Set the admin password before signing in'),
+    })
   }
-
-  await sdk.action.createOwnTask(effects, getAdminCredentials, 'critical', {
-    reason: i18n('Retrieve the admin password'),
-  })
 })
 ```
+
+See the [Prompt User to Create Admin Credentials](./recipe-admin-credentials.md) recipe for the matching action.
 
 ### Prompt for Required Configuration
 
 Ask the user to configure something before the service can function:
 
 ```typescript
-await sdk.action.createOwnTask(effects, manageSmtp, 'high', {
+await sdk.action.createOwnTask(effects, manageSmtp, 'important', {
   reason: i18n('Configure email settings to enable notifications'),
 })
 ```
@@ -136,5 +115,5 @@ Provide a custom `replayId` only when you need to intentionally create multiple 
 To cancel a task programmatically, clear it by its replay key:
 
 ```typescript
-await sdk.action.clearTask(effects, 'my-service:get-admin-credentials')
+await sdk.action.clearTask(effects, 'my-service:set-admin-password')
 ```

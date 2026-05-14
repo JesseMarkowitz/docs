@@ -21,7 +21,7 @@ If you're using [Claude Code](https://claude.com/claude-code) (recommended), poi
 | Recipe | Description |
 |--------|-------------|
 | [Auto-Generate Internal Secrets](recipe-internal-secrets.md) | Generate passwords or tokens in init for internal use (database auth, secret keys) |
-| [Prompt User to Create Admin Credentials](recipe-admin-credentials.md) | Critical task on install that triggers an action to generate and display a password |
+| [Prompt User to Create Admin Credentials](recipe-admin-credentials.md) | Critical task that points to a "set admin password" action — the action generates, stores, and returns the credential on each invocation (first-set + rotation) |
 | [Reset a Password](recipe-reset-password.md) | Action that regenerates credentials and updates the running application |
 | [Gate User Registration](recipe-registration-gating.md) | Toggle action that enables/disables public signups with a dynamic label |
 

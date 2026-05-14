@@ -4,27 +4,29 @@
 
 | Kind | When | Use For |
 |------|------|---------|
-| `'install'` | Fresh install | Generate passwords, create admin users, bootstrap via API |
+| `'install'` | Fresh install | Generate internal secrets, seed file-model defaults, create critical tasks for user setup actions, bootstrap via API |
 | `'update'` | After a package version upgrade | Re-apply config, handle post-migration setup |
-| `'restore'` | Restoring from backup | Re-register triggers, skip password generation |
+| `'restore'` | Restoring from backup | Re-register triggers; credentials are already present from the restored store |
 | `null` | Container rebuild, server restart | Register long-lived triggers (e.g., `.const()` watchers) |
 
 ## Init Kinds
 
 ### Install Only
 
-For one-time setup that generates new state:
+For one-time setup that generates new state. Internal-only secrets (DB password, JWT secret, etc.) **are** generated here, because no user interaction is involved:
 
 ```typescript
 export const initializeService = sdk.setupOnInit(async (effects, kind) => {
   if (kind !== 'install') return
 
-  // Create a critical task for the user to perform before they can start the service
-  await sdk.action.createOwnTask(effects, createPassword, 'critical', {
-    reason: i18n('Create your admin password'),
+  // Internal secret consumed by setupMain — never shown to the user
+  await storeJson.merge(effects, {
+    jwtSecret: utils.getDefaultString({ charset: 'a-z,A-Z,0-9', len: 64 }),
   })
 })
 ```
+
+User-facing admin credentials follow a different pattern — see [Watch State and Prompt](#watch-state-and-prompt-the-admin-credentials-pattern) below.
 
 ### Restore
 
@@ -34,10 +36,9 @@ For setup that should also run when restoring from backup (but not on container 
 export const initializeService = sdk.setupOnInit(async (effects, kind) => {
   if (kind === null) return // Skip on container rebuild
 
-  // Runs on both install and restore
-  await sdk.action.createOwnTask(effects, getAdminPassword, 'critical', {
-    reason: i18n('Retrieve the admin password'),
-  })
+  // Runs on both install and restore — e.g. re-register a webhook with an
+  // upstream service that was issued against a hostname that may have changed.
+  await registerWebhook(effects)
 })
 ```
 
@@ -54,41 +55,98 @@ export const initializeService = sdk.setupOnInit(async (effects, kind) => {
 
   // Install-specific setup
   if (kind === 'install') {
-    const adminPassword = utils.getDefaultString({
-      charset: 'a-z,A-Z,0-9',
-      len: 22,
+    await storeJson.merge(effects, {
+      jwtSecret: utils.getDefaultString({ charset: 'a-z,A-Z,0-9', len: 64 }),
     })
-    await storeJson.merge(effects, { adminPassword })
   }
 })
 ```
 
-## Basic Structure
+## Watch State and Prompt (the admin-credentials pattern)
+
+For state the user owns — admin passwords, API tokens, primary URL — pair a `setupOnInit` watcher with an action. The watcher reads the store and, when the field is unset, surfaces a critical task pointing to the action. The action handles generation, storage, and display, so first-set and later rotation share one code path.
 
 ```typescript
-// init/initializeService.ts
-import { utils } from '@start9labs/start-sdk'
+// init/watchCredentials.ts
+import { setAdminPassword } from '../actions/setAdminPassword'
+import { storeJson } from '../fileModels/store.json'
 import { i18n } from '../i18n'
 import { sdk } from '../sdk'
-import { storeJson } from '../fileModels/store.json'
-import { getAdminPassword } from '../actions/getAdminPassword'
 
-export const initializeService = sdk.setupOnInit(async (effects, kind) => {
-  if (kind !== 'install') return
+export const watchCredentials = sdk.setupOnInit(async (effects) => {
+  const store = await storeJson.read().const(effects)
 
-  // Generate and store password
-  const adminPassword = utils.getDefaultString({
-    charset: 'a-z,A-Z,0-9',
-    len: 22,
-  })
-  await storeJson.merge(effects, { adminPassword })
-
-  // Create task prompting user to retrieve password
-  await sdk.action.createOwnTask(effects, getAdminPassword, 'critical', {
-    reason: i18n('Retrieve the admin password'),
-  })
+  if (!store?.adminPassword) {
+    await sdk.action.createOwnTask(effects, setAdminPassword, 'critical', {
+      reason: i18n('Set the admin password before signing in'),
+    })
+  }
 })
 ```
+
+The matching `setAdminPassword` action lives in `startos/actions/` and looks like:
+
+```typescript
+// actions/setAdminPassword.ts
+import { utils } from '@start9labs/start-sdk'
+import { storeJson } from '../fileModels/store.json'
+import { i18n } from '../i18n'
+import { sdk } from '../sdk'
+
+export const setAdminPassword = sdk.Action.withoutInput(
+  'set-admin-password',
+  async () => ({
+    name: i18n('Set Admin Password'),
+    description: i18n(
+      'Generate a new random password for the admin account. Replaces any existing password.',
+    ),
+    warning: null,
+    allowedStatuses: 'any',
+    group: null,
+    // `'enabled'` keeps the action reachable from the Actions tab so the user
+    // can rotate the password later.
+    visibility: 'enabled',
+  }),
+  async ({ effects }) => {
+    const adminPassword = utils.getDefaultString({
+      charset: 'a-z,A-Z,0-9',
+      len: 32,
+    })
+    await storeJson.merge(effects, { adminPassword })
+
+    return {
+      version: '1',
+      title: i18n('Login Credentials'),
+      message: i18n('Use these credentials to sign in.'),
+      result: {
+        type: 'group',
+        value: [
+          {
+            type: 'single',
+            name: i18n('Username'),
+            description: null,
+            value: 'admin',
+            masked: false,
+            copyable: true,
+            qr: false,
+          },
+          {
+            type: 'single',
+            name: i18n('Password'),
+            description: null,
+            value: adminPassword,
+            masked: true,
+            copyable: true,
+            qr: false,
+          },
+        ],
+      },
+    }
+  },
+)
+```
+
+If the upstream service needs the password applied via CLI or API rather than just read from the store at startup, wrap the work in `sdk.SubContainer.withTemp()` inside the action handler — see the [Reset a Password](recipe-reset-password.md) recipe.
 
 ## Registering initializeService
 
@@ -245,11 +303,11 @@ const password = utils.getDefaultString({
 
 ### Create User Task
 
-Prompt the user to run an action after install:
+Prompt the user to run an action — typically when state init detects is missing:
 
 ```typescript
-await sdk.action.createOwnTask(effects, getAdminPassword, 'critical', {
-  reason: i18n('Retrieve the admin password'),
+await sdk.action.createOwnTask(effects, setAdminPassword, 'critical', {
+  reason: i18n('Set the admin password before signing in'),
 })
 ```
 

@@ -4,21 +4,24 @@ Actions are user-triggered operations that appear in the StartOS UI for your ser
 
 ## Action Without Input
 
-The simplest action type retrieves or computes a result and displays it to the user.
+The simplest action type does its work and returns a result to display. The canonical "set admin password" action generates a random password, writes it to the store, and returns the new credential — the same action serves first-set (surfaced by a critical task on install) and later rotation:
 
 ```typescript
+import { utils } from "@start9labs/start-sdk";
 import { i18n } from "../i18n";
 import { sdk } from "../sdk";
 import { storeJson } from "../fileModels/store.json";
 
-export const getAdminCredentials = sdk.Action.withoutInput(
+export const setAdminPassword = sdk.Action.withoutInput(
   // ID
-  "get-admin-credentials",
+  "set-admin-password",
 
   // Metadata
-  async ({ effects }) => ({
-    name: i18n("Get Admin Credentials"),
-    description: i18n("Retrieve admin username and password"),
+  async () => ({
+    name: i18n("Set Admin Password"),
+    description: i18n(
+      "Generate a new random password for the admin account. Replaces any existing password.",
+    ),
     warning: null,
     allowedStatuses: "any", // 'any', 'only-running', 'only-stopped'
     group: null,
@@ -27,18 +30,22 @@ export const getAdminCredentials = sdk.Action.withoutInput(
 
   // Handler
   async ({ effects }) => {
-    const store = await storeJson.read().once();
+    const adminPassword = utils.getDefaultString({
+      charset: "a-z,A-Z,0-9",
+      len: 32,
+    });
+    await storeJson.merge(effects, { adminPassword });
 
     return {
       version: "1",
-      title: "Admin Credentials",
-      message: "Your admin credentials:",
+      title: i18n("Login Credentials"),
+      message: i18n("Use these credentials to sign in."),
       result: {
         type: "group",
         value: [
           {
             type: "single",
-            name: "Username",
+            name: i18n("Username"),
             description: null,
             value: "admin",
             masked: false,
@@ -47,9 +54,9 @@ export const getAdminCredentials = sdk.Action.withoutInput(
           },
           {
             type: "single",
-            name: "Password",
+            name: i18n("Password"),
             description: null,
-            value: store?.adminPassword ?? "UNKNOWN",
+            value: adminPassword,
             masked: true,
             copyable: true,
             qr: false,
@@ -61,15 +68,17 @@ export const getAdminCredentials = sdk.Action.withoutInput(
 );
 ```
 
+The action is paired with a `setupOnInit` watcher that surfaces a critical task when no password is stored — generation, storage, and display all live in this one handler, so first-set and rotation share a single code path. See [Prompt User to Create Admin Credentials](./recipe-admin-credentials.md).
+
 ## Registering Actions
 
 All actions must be registered in `actions/index.ts`:
 
 ```typescript
 import { sdk } from "../sdk";
-import { getAdminCredentials } from "./getAdminCredentials";
+import { setAdminPassword } from "./setAdminPassword";
 
-export const actions = sdk.Actions.of().addAction(getAdminCredentials);
+export const actions = sdk.Actions.of().addAction(setAdminPassword);
 ```
 
 ## Result Types
@@ -110,16 +119,7 @@ Actions can be surfaced to users as tasks — notifications that prompt them to 
 
 ### Auto-Generate Passwords
 
-Do not accept password input from users — users are bad at choosing passwords. Instead, auto-generate strong passwords and display them in action results:
-
-```typescript
-import { utils } from "@start9labs/start-sdk";
-
-// Generate a strong random password
-const password = utils.getDefaultString({ charset: "a-z,A-Z,0-9", len: 22 });
-```
-
-If a user needs to recover a lost password, provide a "Reset Password" action that generates a new one and updates the service's database or config. Display the new password as a masked, copyable result.
+The standard shape for password actions: the handler generates the password with `utils.getDefaultString()`, writes it where the service reads it from, and returns it as a masked, copyable result. Server-side generation produces strong passwords and means the same action covers first-set and rotation. The primary example above (`setAdminPassword`) is the canonical shape — see also the [Reset a Password](./recipe-reset-password.md) recipe for variants that apply the new password through the upstream service's CLI or API.
 
 ### Registration-Gated Services
 
@@ -333,11 +333,11 @@ export const manageSmtp = sdk.Action.withInput(
 
 ```typescript
 import { sdk } from "../sdk";
-import { getAdminCredentials } from "./getAdminCredentials";
+import { setAdminPassword } from "./setAdminPassword";
 import { manageSmtp } from "./manageSmtp";
 
 export const actions = sdk.Actions.of()
-  .addAction(getAdminCredentials)
+  .addAction(setAdminPassword)
   .addAction(manageSmtp);
 ```
 
@@ -388,12 +388,11 @@ export const main = sdk.setupMain(async ({ effects }) => {
 
 ### 5. Initialize with SMTP Disabled
 
-In `init/initializeService.ts`, set the default SMTP state:
+In `init/initializeService.ts`, set the default SMTP state alongside any internal-only secrets the service needs. The admin password is set by the `setAdminPassword` action when the user runs its critical task (see [Prompt User to Create Admin Credentials](./recipe-admin-credentials.md)):
 
 ```typescript
 await storeJson.merge(effects, {
-  adminPassword,
-  secretKey,
+  secretKey: utils.getDefaultString({ charset: "a-z,A-Z,0-9", len: 64 }),
   smtp: { selection: "disabled", value: {} },
 });
 ```
